@@ -1,4 +1,5 @@
-const API_URL = "https://cursosonline-9def.onrender.com";
+window.API_URL = window.API_URL || "https://cursosonline-9def.onrender.com";
+var API_URL = window.API_URL; // var permite redeclaración sin romper
 
 /* ===================================================
    AUTH / SESIÓN
