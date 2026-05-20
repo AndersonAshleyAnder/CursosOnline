@@ -58,6 +58,20 @@ async function authFetch(url, options = {}) {
 }
 
 /* ===================================================
+   ⭐ HELPERS DE RATING (PEGAR AQUÍ) ✅
+=================================================== */
+function ratingText(avg, count) {
+  const a = Number(avg || 0);
+  const c = Number(count || 0);
+
+  // Si no hay reseñas
+  if (!c) return `<span style="opacity:.75">⭐ Sin reseñas</span>`;
+
+  // Limita promedio a 0..5 y muestra 1 decimal
+  const prom = Math.max(0, Math.min(5, a)).toFixed(1);
+  return `<span title="Promedio ${prom} (${c} reseñas)">⭐ ${prom} (${c})</span>`;
+}
+/* ===================================================
    MENÚ POR ROL (COMPATIBLE CON NAV + HAMBURGUESA) ✅
    - No fuerza "block/inline-flex", deja que el CSS mande
    - Solo oculta con display:none
@@ -244,10 +258,11 @@ function renderCards(grid, cursos, inscritos) {
 
       <div class="content">
         <p class="title">${c.nombre}</p>
-        <div class="meta">
-          <span>⏱ ${c.duracionHoras} h</span>
-          <span>📌 ${c.categoria}</span>
-        </div>
+       <div class="meta">
+  <span>⏱ ${c.duracionHoras} h</span>
+  <span>📌 ${c.categoria}</span>
+  ${ratingText(c.ratingPromedio, c.totalResenas)}
+</div>
         <p class="desc">${desc}</p>
       </div>
 
