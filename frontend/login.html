@@ -2,15 +2,25 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
-  <link rel="stylesheet" href="style.css">
-  
-</head>
-<body>
+  <link rel="stylesheet" href <!-- ✅ NAV UNIFICADO -->
+  <nav class="nav-container">
+    <div class="nav-left">
+      <ndex.htmlInicio</a>
+    </div>
 
-  <!-- Nav opcional. Si no quieres nav en login, puedes borrarlo -->
-  <nav>
-    <a href="index.html">Inicio</a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <div class="nav-menu" id="menu">
+      <div class="nav-links">
+        <a href="mis-cursos.html" id="link    <a href="certificados.html" id="link-cert <a href="estudiantes.html"s</a>
+        <a href="consultas.html" id="link-cona href="dashboard-admin.html" id="link </div>
+
+      <div class="nav-auth">
+        <a href="login.html" id="link-login  <a href="register.html" id="
+        <a href="#" id="link     </div>
+    </div>
   </nav>
 
   <div class="auth-page">
@@ -18,57 +28,37 @@
       <h1>Iniciar sesión</h1>
 
       <p>
-        ¿No tienes cuenta? <a class="small-link" href="register.html">Regístrate aquí</a>.
-      </p>
+        ¿No tienes cuenta?
+        <a class="mini-link" href="register.html</p>
 
-      <!-- ✅ CAMBIO CLAVE: envolver inputs + botón en un FORM -->
       <form id="login-form" method="POST" onsubmit="return false;">
-
         <div class="field">
           <label for="email"><strong>Email:</strong></label>
-          <input
-            id="email"
-            type="email"
-            placeholder="tu_correo@ejemplo.com"
-            autocomplete="username"
-            required
-          >
+          <input id="email" type="email" placeholder="tu_correo@ejemplo.com" autocomplete="username" required>
         </div>
 
         <div class="field">
-          <label for="password"><strong>Password:</strong></label>
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-          >
+          <label for="password"><strong>Contraseña:</strong></label>
+          <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
         </div>
 
         <div class="actions">
-          <!-- ✅ IMPORTANTE: type submit para que Enter dispare el login -->
           <button id="btn-login" type="submit">Entrar</button>
           <span id="msg" class="msg"></span>
         </div>
-
       </form>
     </div>
   </div>
 
-  <script>
-    const API_URL = "https://cursosonline-9def.onrender.com";
+  <!-- ✅ app.js UNA sola vez (API_URL, toggleMenu, aplicarMenuPorRol, authFetch) -->
+  <script src="app.js<script>
+    // Enter funciona
+    document.getElementById("login-form").onsubmit = async function(e){
+      e.preventDefault();
+      await login();
+      return false;
+    };
 
-    // ✅ CAMBIO CLAVE: escuchar SUBMIT (Enter funciona automáticamente)
-    document.getElementById("login-form").onsubmit = async function(e) {
-  e.preventDefault();
-  return await login();
-};
-
-    // (Opcional) Deja el click también, no hace daño
-    // document.getElementById("btn-login").addEventListener("click", login);
-
-    // (Opcional) UX: enfocar email al abrir
     document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("email");
       if (email) email.focus();
@@ -119,5 +109,6 @@
       }
     }
   </script>
+
 </body>
 </html>
