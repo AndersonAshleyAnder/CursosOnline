@@ -72,31 +72,31 @@ function aplicarMenuPorRol() {
   const linkRegister = document.getElementById("link-register");
   const linkLogout = document.getElementById("link-logout");
 
-  if (linkLogin) linkLogin.style.display = logged ? "none" : "inline-flex";
-  if (linkRegister) linkRegister.style.display = logged ? "none" : "inline-flex";
-  if (linkLogout) linkLogout.style.display = logged ? "inline-flex" : "none";
+  if (linkLogin) linkLogin.style.display = logged ? "none" : "block";
+if (linkRegister) linkRegister.style.display = logged ? "none" : "block";
+if (linkLogout) linkLogout.style.display = logged ? "block" : "none";
 
-  if (linkMis) linkMis.style.display = logged ? "inline-flex" : "none";
-  if (linkCert) linkCert.style.display = logged ? "inline-flex" : "none";
+  if (linkMis) linkMis.style.display = logged ? "block" : "none";
+  if (linkCert) linkCert.style.display = logged ? "block" : "none";
 
   const esAdmin = logged && rol === "admin";
 
 // ✅ SOLO ESTUDIANTES ven esto
 if (linkMis) linkMis.style.display =
-  (logged && rol === "estudiante") ? "inline-flex" : "none";
+  (logged && rol === "estudiante") ? "block" : "none";
 
 if (linkCert) linkCert.style.display =
-  (logged && rol === "estudiante") ? "inline-flex" : "none";
+  (logged && rol === "estudiante") ? "block" : "none";
 
 // ✅ SOLO ADMIN ve esto
 if (linkEst) linkEst.style.display =
-  esAdmin ? "inline-flex" : "none";
+  esAdmin ? "block" : "none";
 
 if (linkCon) linkCon.style.display =
-  esAdmin ? "inline-flex" : "none";
+  esAdmin ? "block" : "none";
 
 if (linkDash) linkDash.style.display =
-  esAdmin ? "inline-flex" : "none";
+  esAdmin ? "block" : "none";
 
   if (linkLogout) {
     linkLogout.onclick = (e) => {
