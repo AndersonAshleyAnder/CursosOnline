@@ -986,3 +986,30 @@ media (max-width: 480px){
 @media (max-width: 768px){
   .card{ margin: 4px 0; }
 }
+/* ===========================
+   NAV DESKTOP ALINEADO ✅
+=========================== */
+
+/* anula el space-between */
+.nav-container {
+  justify-content: flex-start !important;
+}
+
+/* junta los links al lado de Inicio */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+  width: 100%;
+}
+
+/* empuja solo logout a la derecha */
+#link-logout {
+  margin-left: auto;
+}
+#link-logout {
+  margin-left: auto;
+  background: rgba(124,58,237,.2);
+  border: 1px solid rgba(124,58,237,.5);
+}
