@@ -9,19 +9,13 @@
 <body>
 
 <nav class="nav-container">
-
-  <!-- IZQUIERDA (SIEMPRE visible) -->
   <div class="nav-left">
     <a href="index.html">Inicio</a>
   </div>
 
-  <!-- BOTÓN HAMBURGUESA -->
   <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
-  <!-- MENÚ (todo aquí adentro) -->
   <div class="nav-menu" id="menu">
-
-    <!-- Links de navegación -->
     <div class="nav-links">
       <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
       <a href="certificados.html" id="link-cert">Certificados</a>
@@ -30,16 +24,13 @@
       <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
     </div>
 
-    <!-- Auth -->
     <div class="nav-auth">
       <a href="login.html" id="link-login">Iniciar sesión</a>
       <a href="register.html" id="link-register">Registrarse</a>
       <a href="#" id="link-logout">Cerrar sesión</a>
     </div>
-
   </div>
 </nav>
-
 
 <main class="layout">
 
@@ -51,8 +42,8 @@
   <!-- BUSCAR -->
   <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
     <input id="buscar" placeholder="Buscar por nombre, apellido o email" style="flex:1;">
-    <button onclick="cargar()">Buscar</button>
-    <button onclick="exportarCSV()">Exportar CSV</button>
+    <button id="btn-buscar">Buscar</button>
+    <button id="btn-export">Exportar CSV</button>
   </div>
 
   <!-- CREAR -->
@@ -62,7 +53,7 @@
     <input id="apellido" placeholder="Apellido">
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Contraseña">
-    <button onclick="crear()">Crear</button>
+    <button id="btn-crear">Crear</button>
   </div>
 
   <!-- TABLA -->
@@ -78,18 +69,17 @@
     <tbody id="tabla"></tbody>
   </table>
 
-  <!-- PAGINACIÓN -->
- <!-- PAGINACIÓN (NUMÉRICA) -->
-<div class="paginacion-wrapper" style="margin-top:16px;">
-  <button id="btn-prev-local">Anterior</button>
+  <!-- PAGINACIÓN NUMÉRICA (MISMO LOOK QUE CATÁLOGO) -->
+  <div class="paginacion-wrapper" style="margin-top:16px;">
+    <button id="btn-prev-local">Anterior</button>
 
-  <div id="paginacion-local"></div>
+    <!-- 👇 usa los estilos del CSS global (#paginacion) -->
+    <div id="paginacion"></div>
 
-  <button id="btn-next-local">Siguiente</button>
-</div>
+    <button id="btn-next-local">Siguiente</button>
+  </div>
 
-<p id="info-pagina-local"></p>
-
+  <p id="info-pagina" style="text-align:center;"></p>
 
 </main>
 
@@ -107,8 +97,8 @@
     <input id="m-email" placeholder="Email" style="margin-top:10px;">
 
     <div style="display:flex; gap:10px; margin-top:16px;">
-      <button onclick="guardarEdicion()">Guardar</button>
-      <button onclick="cerrarModal()">Cancelar</button>
+      <button id="btn-guardar">Guardar</button>
+      <button id="btn-cancelar">Cancelar</button>
     </div>
   </div>
 </div>
@@ -128,6 +118,7 @@
 </div>
 
 <script src="app.js"></script>
+
 <script>
 let usuarios = [];
 let page = 1;
@@ -146,16 +137,22 @@ function showLoader(v){
   document.getElementById("loader").style.display = v ? "block" : "none";
 }
 
-/* DATA */
+/* =========================
+   DATA: CARGAR (usa /api/admin/usuarios)
+   ========================= */
 async function cargar(){
   try{
     showLoader(true);
     const q = document.getElementById("buscar").value || "";
+
     const res = await authFetch(`${API_URL}/api/admin/usuarios?q=${encodeURIComponent(q)}`);
     usuarios = await res.json();
-    total.textContent = `Total estudiantes: ${usuarios.length}`;
+
+    document.getElementById("total").textContent = `Total estudiantes: ${usuarios.length}`;
     page = 1;
+
     render();
+    renderPaginacionNumerica();
   }catch(e){
     showToast(e.message,false);
   }finally{
@@ -163,15 +160,21 @@ async function cargar(){
   }
 }
 
+/* =========================
+   RENDER TABLA (slice por página)
+   ========================= */
 function render(){
   const tbody = document.getElementById("tabla");
   tbody.innerHTML = "";
 
-  usuarios.slice((page-1)*limit, page*limit).forEach(u=>{
+  const ini = (page - 1) * limit;
+  const fin = ini + limit;
+
+  usuarios.slice(ini, fin).forEach(u=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${u.nombre||""} ${u.apellido||""}</td>
-      <td>${u.email}</td>
+      <td>${u.email||""}</td>
       <td style="text-align:right;">
         <button onclick="editar('${u._id}')">✏️</button>
         <button onclick="resetPass('${u._id}')">🔑</button>
@@ -180,40 +183,110 @@ function render(){
     tbody.appendChild(tr);
   });
 
-  pagina.textContent = `Página ${page} de ${Math.ceil(usuarios.length/limit)}`;
+  const totalPages = Math.max(Math.ceil(usuarios.length / limit), 1);
+  document.getElementById("info-pagina").textContent = `Página ${page} de ${totalPages}`;
 }
 
-function next(){ if(page*limit<usuarios.length){page++;render();}}
-function prev(){ if(page>1){page--;render();}}
+/* =========================
+   PAGINACIÓN NUMÉRICA (igual al catálogo)
+   ========================= */
+function renderPaginacionNumerica(){
+  const cont = document.getElementById("paginacion");
+  const btnPrev = document.getElementById("btn-prev-local");
+  const btnNext = document.getElementById("btn-next-local");
 
-/* ACTIONS */
+  const totalPages = Math.max(Math.ceil(usuarios.length / limit), 1);
+
+  // prev/next
+  btnPrev.disabled = page <= 1;
+  btnNext.disabled = page >= totalPages;
+
+  btnPrev.onclick = () => { if(page>1){ page--; render(); renderPaginacionNumerica(); } };
+  btnNext.onclick = () => { if(page<totalPages){ page++; render(); renderPaginacionNumerica(); } };
+
+  // si solo 1 página, no mostrar números
+  if (totalPages <= 1){
+    cont.innerHTML = "";
+    return;
+  }
+
+  cont.innerHTML = "";
+
+  const maxBotones = 7;
+  let inicio = Math.max(page - 3, 1);
+  let fin = Math.min(inicio + maxBotones - 1, totalPages);
+  inicio = Math.max(fin - maxBotones + 1, 1);
+
+  const btnPag = (p, activo) => {
+    const b = document.createElement("button");
+    b.textContent = String(p);
+    b.className = activo ? "activo" : "";
+    b.disabled = activo;
+    b.onclick = () => { page = p; render(); renderPaginacionNumerica(); };
+    return b;
+  };
+
+  const puntos = () => {
+    const s = document.createElement("span");
+    s.textContent = "...";
+    s.style.padding = "0 6px";
+    return s;
+  };
+
+  if (inicio > 1){
+    cont.appendChild(btnPag(1, page === 1));
+    if (inicio > 2) cont.appendChild(puntos());
+  }
+
+  for (let p = inicio; p <= fin; p++){
+    cont.appendChild(btnPag(p, p === page));
+  }
+
+  if (fin < totalPages){
+    if (fin < totalPages - 1) cont.appendChild(puntos());
+    cont.appendChild(btnPag(totalPages, page === totalPages));
+  }
+}
+
+/* =========================
+   ACTIONS (CRUD)
+   ========================= */
 async function crear(){
   try{
     showLoader(true);
     await authFetch(`${API_URL}/api/admin/usuarios`, {
       method:"POST",
-      body:JSON.stringify({
-        nombre:nombre.value,
-        apellido:apellido.value,
-        email:email.value,
-        password:password.value
+      body: JSON.stringify({
+        nombre: document.getElementById("nombre").value,
+        apellido: document.getElementById("apellido").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
       })
     });
-    nombre.value=apellido.value=email.value=password.value="";
+
+    document.getElementById("nombre").value = "";
+    document.getElementById("apellido").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("password").value = "";
+
     showToast("✅ Estudiante creado");
-    cargar();
+    await cargar();
   }catch(e){
     showToast(e.message,false);
-  }finally{ showLoader(false); }
+  }finally{
+    showLoader(false);
+  }
 }
 
 function editar(id){
-  const u = usuarios.find(x=>x._id===id);
+  const u = usuarios.find(x => x._id === id);
   editId = id;
-  document.getElementById("m-nombre").value = u.nombre||"";
-  document.getElementById("m-apellido").value = u.apellido||"";
-  document.getElementById("m-email").value = u.email||"";
-  modal.style.display="flex";
+
+  document.getElementById("m-nombre").value = u?.nombre || "";
+  document.getElementById("m-apellido").value = u?.apellido || "";
+  document.getElementById("m-email").value = u?.email || "";
+
+  document.getElementById("modal").style.display="flex";
 }
 
 async function guardarEdicion(){
@@ -221,21 +294,26 @@ async function guardarEdicion(){
     showLoader(true);
     await authFetch(`${API_URL}/api/admin/usuarios/${editId}`, {
       method:"PUT",
-      body:JSON.stringify({
+      body: JSON.stringify({
         nombre: document.getElementById("m-nombre").value,
         apellido: document.getElementById("m-apellido").value,
         email: document.getElementById("m-email").value
       })
     });
+
     cerrarModal();
     showToast("✅ Usuario actualizado");
-    cargar();
+    await cargar();
   }catch(e){
     showToast(e.message,false);
-  }finally{ showLoader(false); }
+  }finally{
+    showLoader(false);
+  }
 }
 
-function cerrarModal(){ modal.style.display="none"; }
+function cerrarModal(){
+  document.getElementById("modal").style.display="none";
+}
 
 async function eliminar(id){
   if(!confirm("¿Eliminar este usuario?")) return;
@@ -243,10 +321,12 @@ async function eliminar(id){
     showLoader(true);
     await authFetch(`${API_URL}/api/admin/usuarios/${id}`, { method:"DELETE" });
     showToast("🗑 Usuario eliminado");
-    cargar();
+    await cargar();
   }catch(e){
     showToast(e.message,false);
-  }finally{ showLoader(false); }
+  }finally{
+    showLoader(false);
+  }
 }
 
 async function resetPass(id){
@@ -256,26 +336,38 @@ async function resetPass(id){
     showLoader(true);
     await authFetch(`${API_URL}/api/admin/usuarios/${id}/reset-password`, {
       method:"PUT",
-      body:JSON.stringify({password:pass})
+      body: JSON.stringify({ password: pass })
     });
     showToast("🔑 Contraseña actualizada");
   }catch(e){
     showToast(e.message,false);
-  }finally{ showLoader(false); }
+  }finally{
+    showLoader(false);
+  }
 }
 
 /* CSV */
 function exportarCSV(){
   const rows = [["Nombre","Apellido","Email"]];
-  usuarios.forEach(u=>rows.push([u.nombre,u.apellido,u.email]));
-  const csv = rows.map(r=>r.join(",")).join("\n");
+  usuarios.forEach(u => rows.push([u.nombre||"", u.apellido||"", u.email||""]));
+  const csv = rows.map(r => r.join(",")).join("\n");
+
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.href = URL.createObjectURL(new Blob([csv], { type:"text/csv" }));
   a.download = "estudiantes.csv";
   a.click();
 }
 
+/* Eventos UI */
+document.getElementById("btn-buscar").onclick = cargar;
+document.getElementById("btn-export").onclick = exportarCSV;
+document.getElementById("btn-crear").onclick = crear;
+document.getElementById("btn-guardar").onclick = guardarEdicion;
+document.getElementById("btn-cancelar").onclick = cerrarModal;
+
+// carga inicial
 cargar();
 </script>
+
 </body>
 </html>
