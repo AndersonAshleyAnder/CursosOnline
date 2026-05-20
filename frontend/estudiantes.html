@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Estudiantes</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -109,10 +110,6 @@
 <div id="loader">
   <div class="loader-box">Procesando…</div>
 </div>
-  <div style="background:#111a33; padding:20px 26px; border-radius:14px;">
-    Procesando…
-  </div>
-</div>
 
 <script src="app.js"></script>
 <script>
@@ -138,7 +135,7 @@ async function cargar(){
   try{
     showLoader(true);
     const q = buscar.value || "";
-    const res = await authFetch(`/api/admin/usuarios?q=${encodeURIComponent(q)}`);
+    const res = await authFetch(`${API_URL}/api/admin/usuarios?q=${encodeURIComponent(q)}`);
     usuarios = await res.json();
     total.textContent = `Total estudiantes: ${usuarios.length}`;
     page = 1;
@@ -177,7 +174,7 @@ function prev(){ if(page>1){page--;render();}}
 async function crear(){
   try{
     showLoader(true);
-    await authFetch("/api/admin/usuarios",{
+    wait authFetch(`${API_URL}/api/admin/usuarios`, {
       method:"POST",
       body:JSON.stringify({
         nombre:nombre.value,
@@ -206,7 +203,7 @@ function editar(id){
 async function guardarEdicion(){
   try{
     showLoader(true);
-    await authFetch(`/api/admin/usuarios/${editId}`,{
+    await authFetch(`${API_URL}/api/admin/usuarios/${editId}`, {
       method:"PUT",
       body:JSON.stringify({
         nombre: document.getElementById("m-nombre").value,
@@ -228,7 +225,7 @@ async function eliminar(id){
   if(!confirm("¿Eliminar este usuario?")) return;
   try{
     showLoader(true);
-    await authFetch(`/api/admin/usuarios/${id}`,{method:"DELETE"});
+    await authFetch(`${API_URL}/api/admin/usuarios/${id}`, { method:"DELETE" });
     showToast("🗑 Usuario eliminado");
     cargar();
   }catch(e){
@@ -241,7 +238,7 @@ async function resetPass(id){
   if(!pass) return;
   try{
     showLoader(true);
-    await authFetch(`/api/admin/usuarios/${id}/reset-password`,{
+    await authFetch(`${API_URL}/api/admin/usuarios/${id}/reset-password`, {
       method:"PUT",
       body:JSON.stringify({password:pass})
     });
@@ -264,6 +261,5 @@ function exportarCSV(){
 
 cargar();
 </script>
-<script src="app.js"></script>
 </body>
 </html>
