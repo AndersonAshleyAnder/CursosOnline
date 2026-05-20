@@ -2,61 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .auth-page{
-      min-height: calc(100vh - 70px);
-      display: grid;
-      place-items: center;
-      padding: 24px 16px;
-    }
-    .auth-card{
-      width: min(520px, 100%);
-      background: rgba(17,26,51,.55);
-      border: 1px solid rgba(38,49,82,.75);
-      border-radius: 16px;
-      box-shadow: 0 10px 35px rgba(0,0,0,.35);
-      padding: 18px 18px 16px;
-    }
-    .auth-card h1{
-      margin: 4px 0 8px;
-      font-size: 34px;
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .actions{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      margin-top: 14px;
-    }
-    .msg{
-      color: rgba(226,232,240,.95);
-      font-weight: 700;
-    }
-  </style>
 </head>
 
 <body>
 
-<nav>
+<nav class="nav-container">
   <div class="nav-left">
     <a href="index.html">Inicio</a>
   </div>
   <div class="nav-right">
-    <a href="login.html">Iniciar sesión</a>
+    <a href="login.html" class="mini-link">Iniciar sesión</a>
   </div>
 </nav>
 
 <div class="auth-page">
   <div class="auth-card">
     <h1>Crear cuenta</h1>
-    <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>.</p>
+    <p>¿Ya tienes cuenta? <a class="mini-link" href="login.html">Inicia sesión</a>.</p>
 
     <div class="field">
       <label><strong>Nombre:</strong></label>
@@ -87,7 +52,7 @@
 </div>
 
 <script>
-const API_URL = "http://localhost:3000";
+const API_URL = "https://cursosonline-9def.onrender.com";
 
 document.getElementById("btn-register")
   .addEventListener("click", register);
@@ -122,14 +87,8 @@ async function register() {
 
     const res = await fetch(`${API_URL}/api/auth/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        nombre,
-        email,
-        password
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, email, password })
     });
 
     const data = await res.json();
@@ -139,15 +98,13 @@ async function register() {
     }
 
     msg.textContent = "✅ Registro exitoso";
-    
+
     setTimeout(() => {
       window.location.href = "login.html";
     }, 1000);
 
   } catch (err) {
-
     msg.textContent = "❌ " + err.message;
-
   }
 }
 </script>
