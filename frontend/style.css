@@ -673,3 +673,48 @@ media (max-width: 480px){
     text-align:center;
   }
 }
+/* ===========================
+   HAMBURGUESA MENU ✅
+=========================== */
+
+.menu-toggle {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px){
+
+  .menu-toggle {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav-left {
+    width: 100%;
+  }
+
+  .nav-right {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .nav-right.show {
+    display: flex;
+  }
+
+  .nav-right a {
+    width: 100%;
+    padding: 12px;
+    background: rgba(17,26,51,.7);
+    border-radius: 8px;
+    text-align: left;
+  }
+}
