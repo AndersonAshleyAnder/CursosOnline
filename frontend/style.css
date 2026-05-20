@@ -1016,3 +1016,77 @@ media (max-width: 480px){
 .nav-container {
   flex-wrap: nowrap !important; /* ✅ no permite salto */
 }
+/* ===========================
+   NAV DESKTOP (Opción A) ✅
+   Links a la izquierda + Auth a la derecha
+=========================== */
+
+.nav-container{
+  justify-content: flex-start; /* quita el hueco del space-between */
+}
+
+/* Menú en desktop: una sola fila */
+.nav-menu{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 18px;
+  flex: 1;              /* ocupa el espacio sobrante del nav */
+  width: auto;          /* IMPORTANTÍSIMO: no usar 100% aquí */
+}
+
+/* Grupo izquierda */
+.nav-links{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Grupo derecha */
+.nav-auth{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;    /* 🔥 esto empuja a la derecha */
+}
+
+/* MOBILE: menú en columna */
+@media (max-width: 768px){
+  .nav-menu{
+    position: absolute;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    background: rgba(11,16,32,.95);
+    border: 1px solid rgba(38,49,82,.7);
+    border-radius: 12px;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .nav-menu.show{ display: flex; }
+
+  .nav-links,
+  .nav-auth{
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 0;  /* en móvil no empujes a la derecha */
+  }
+
+  .nav-menu a{
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(17,26,51,.6);
+  }
+
+  .menu-toggle{
+    display: inline-flex;
+    margin-left: auto;
+  }
+}
+
