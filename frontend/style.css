@@ -718,3 +718,54 @@ media (max-width: 480px){
     text-align: left;
   }
 }
+/* ===========================
+   NAV RESPONSIVE REAL ✅
+=========================== */
+
+.menu-toggle {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* DESKTOP */
+.nav-menu {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* MOBILE */
+@media (max-width: 768px){
+
+  .menu-toggle {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+
+    display: none;
+    flex-direction: column;
+    background: rgba(11,16,32,.95);
+    padding: 15px;
+  }
+
+  .nav-menu.show {
+    display: flex;
+  }
+
+  .nav-menu a {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(17,26,51,.6);
+  }
+}
