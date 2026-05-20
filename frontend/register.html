@@ -2,108 +2,155 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro</title>
-  <link rel="stylesheet" href="!-- ✅ NAV UNIFICADO -->
-  <nav class="nav-container">
-    <div class="nav-left">
-      <a href="indexio</a>
-    </div>
-
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-
-    <div class="nav-menu" id="menu">
-      <div class="nav-links">
-        <a href="mis-cursos.html" id="link-m  <a href="certificados.html" id="link      <a href="estudiantes.html" id="link-est <a href="consultas.html" id="link-cona href="dashboard-admin.html" id="     </div>
-
-      <div class="nav-auth">
-        <a href="login.html" id="link-login  <a href="register.html" id="link-registerref="#" id="a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="auth-page">
-    <div class="auth-card">
-      <h1>Crear cuenta</h1>
-      <p>¿Ya tienes cuenta? <a class="mini-link" hrefa>.</p>
-
-      <form id="register-form" method="POST" onsubmit="return false;">
-        <div class="field">
-          <label><strong>Nombre:</strong></label>
-          <input id="nombre" type="text" required>
-        </div>
-
-        <div class="field">
-          <label><strong>Email:</strong></label>
-          <input id="email" type="email" autocomplete="username" required>
-        </div>
-
-        <div class="field">
-          <label><strong>Contraseña:</strong></label>
-          <input id="password" type="password" autocomplete="new-password" required>
-        </div>
-
-        <div class="field">
-          <label><strong>Confirmar contraseña:</strong></label>
-          <input id="password2" type="password" autocomplete="new-password" required>
-        </div>
-
-        <div class="actions">
-          <button id="btn-register" type="submit">Registrarme</button>
-          <span id="msg" class="msg"></span>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ✅ app.js UNA sola vez -->
-  <script src="app.js<script>
-    document.getElementById("register-form").onsubmit = async function(e){
-      e.preventDefault();
-      await register();
-      return false;
-    };
-
-    async function register() {
-      const nombre = document.getElementById("nombre").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const password2 = document.getElementById("password2").value.trim();
-      const msg = document.getElementById("msg");
-
-      if (!nombre || !email || !password) {
-        msg.textContent = "❌ Completa todos los campos";
-        return;
-      }
-      if (password.length < 6) {
-        msg.textContent = "❌ Password mínimo 6 caracteres";
-        return;
-      }
-      if (password !== password2) {
-        msg.textContent = "❌ Las contraseñas no coinciden";
-        return;
-      }
-
-      msg.textContent = "⏳ Registrando...";
-
-      try {
-        const res = await fetch(`${API_URL}/api/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre, email, password })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Error registrando usuario");
-
-        msg.textContent = "✅ Registro exitoso";
-        setTimeout(() => window.location.href = "login.html", 900);
-
-      } catch (err) {
-        msg.textContent = "❌ " + err.message;
-      }
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-page{
+      min-height: calc(100vh - 70px);
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
     }
-  </script>
+    .auth-card{
+      width: min(520px, 100%);
+      background: rgba(17,26,51,.55);
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 16px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.35);
+      padding: 18px 18px 16px;
+    }
+    .auth-card h1{
+      margin: 4px 0 8px;
+      font-size: 34px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .msg{
+      color: rgba(226,232,240,.95);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+  </div>
+  <div class="nav-right">
+    <a href="login.html">Iniciar sesión</a>
+  </div>
+</nav>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Crear cuenta</h1>
+    <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>.</p>
+
+    <div class="field">
+      <label><strong>Nombre:</strong></label>
+      <input id="nombre" type="text">
+    </div>
+
+    <div class="field">
+      <label><strong>Email:</strong></label>
+      <input id="email" type="email">
+    </div>
+
+    <div class="field">
+      <label><strong>Password:</strong></label>
+      <input id="password" type="password">
+    </div>
+
+    <div class="field">
+      <label><strong>Confirmar password:</strong></label>
+      <input id="password2" type="password">
+    </div>
+
+    <div class="actions">
+      <button id="btn-register">Registrarme</button>
+      <span id="msg" class="msg"></span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_URL = "http://localhost:3000";
+
+document.getElementById("btn-register")
+  .addEventListener("click", register);
+
+async function register() {
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const password2 = document.getElementById("password2").value.trim();
+  const msg = document.getElementById("msg");
+
+  // ✅ Validaciones
+  if (!nombre || !email || !password) {
+    msg.textContent = "❌ Completa todos los campos";
+    return;
+  }
+
+  if (password.length < 6) {
+    msg.textContent = "❌ Password mínimo 6 caracteres";
+    return;
+  }
+
+  if (password !== password2) {
+    msg.textContent = "❌ Las contraseñas no coinciden";
+    return;
+  }
+
+  msg.textContent = "⏳ Registrando...";
+
+  try {
+
+    const res = await fetch(`${API_URL}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        nombre,
+        email,
+        password
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Error registrando usuario");
+    }
+
+    msg.textContent = "✅ Registro exitoso";
+    
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1000);
+
+  } catch (err) {
+
+    msg.textContent = "❌ " + err.message;
+
+  }
+}
+</script>
 
 </body>
 </html>
