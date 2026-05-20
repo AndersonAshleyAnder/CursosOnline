@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Admin</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .card-metric{
+      background:rgba(17,26,51,.55);
+      border:1px solid rgba(38,49,82,.75);
+      border-radius:14px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+      animation: fadeUp .4s ease;
+    }
+    .card-metric h3{ font-size:32px; margin:0; }
+    .card-metric p{ margin:4px 0 0; color:#94a3b8; font-weight:600; }
+
+    .charts{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:24px;
+      margin:30px 0;
+    }
+
+    .activity{
+      background:rgba(17,26,51,.45);
+      border:1px solid rgba(38,49,82,.75);
+      border-radius:14px;
+      padding:16px;
+      max-width:700px;
+      animation: fadeUp .4s ease;
+    }
+
+    .activity li{
+      padding:8px 0;
+      border-bottom:1px solid rgba(38,49,82,.4);
+      font-size:14px;
+    }
+    .activity li:last-child{ border-bottom:none; }
+
+    @keyframes fadeUp{
+      from{ opacity:0; transform:translateY(12px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+
+    .pulse{
+      animation: pulse .4s ease;
+    }
+    @keyframes pulse{
+      0%{ transform:scale(1); }
+      50%{ transform:scale(1.04); }
+      100%{ transform:scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav-container">
+  
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html">Estudiantes</a>
+    <a href="consultas.html">Consultas</a>
+    <a href="dashboard-admin.html">Dashboard</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+
+</nav>
+
+
+
+
+<main class="layout">
+
+  <h1>Dashboard Administrativo</h1>
+  <p>Resumen general del sistema</p>
+
+  <!-- MÉTRICAS -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin:24px 0;">
+    <div class="card-metric" id="card-estudiantes">
+      <h3 id="m-estudiantes">–</h3>
+      <p>Estudiantes</p>
+    </div>
+    <div class="card-metric" id="card-cursos">
+      <h3 id="m-cursos">–</h3>
+      <p>Cursos</p>
+    </div>
+    <div class="card-metric" id="card-inscripciones">
+      <h3 id="m-inscripciones">–</h3>
+      <p>Inscripciones</p>
+    </div>
+    <div class="card-metric" id="card-certificados">
+      <h3 id="m-certificados">–</h3>
+      <p>Certificados</p>
+    </div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="charts">
+    <div class="card-metric">
+      <h3>Distribución general</h3>
+      <canvas id="chartDistribucion"></canvas>
+    </div>
+
+    <div class="card-metric">
+      <h3>Actividad</h3>
+      <canvas id="chartActividad"></canvas>
+    </div>
+
+    <div class="card-metric">
+      <h3>Crecimiento</h3>
+      <canvas id="chartCrecimiento"></canvas>
+    </div>
+  </div>
+
+  <!-- ACTIVIDAD RECIENTE -->
+  <h2>Actividad reciente</h2>
+  <div class="activity">
+    <ul id="lista-actividad"></ul>
+    <p><a href="logs-admin.html">Ver auditoría completa →</a></p>
+  </div>
+
+</main>
+
+<!-- ✅ app.js es obligatorio -->
+<script src="app.js"></script>
+
+<script>
+let chartDistribucion, chartActividad, chartCrecimiento;
+let historial = [];
+const REFRESH_MS = 15000;
+
+async function cargarDashboard(){
+  const stats = await authFetch(`${API_URL}/api/admin/stats`).then(r=>r.json());
+
+  actualizar("m-estudiantes","card-estudiantes",stats.estudiantes);
+  actualizar("m-cursos","card-cursos",stats.cursos);
+  actualizar("m-inscripciones","card-inscripciones",stats.inscripciones);
+  actualizar("m-certificados","card-certificados",stats.certificados);
+
+  const t = new Date().toLocaleTimeString();
+  historial.push({ t, e:stats.estudiantes, i:stats.inscripciones });
+  if(historial.length > 8) historial.shift();
+
+  if(chartDistribucion) chartDistribucion.destroy();
+  chartDistribucion = new Chart(
+    document.getElementById("chartDistribucion"),
+    {
+      type:"doughnut",
+      data:{
+        labels:["Estudiantes","Cursos","Certificados"],
+        datasets:[{
+          label:"Distribución",
+          data:[stats.estudiantes,stats.cursos,stats.certificados],
+          backgroundColor:["#7c3aed","#38bdf8","#22c55e"]
+        }]
+      }
+    }
+  );
+
+  if(chartActividad) chartActividad.destroy();
+  chartActividad = new Chart(
+    document.getElementById("chartActividad"),
+    {
+      type:"bar",
+      data:{
+        labels:["Inscripciones","Certificados"],
+        datasets:[{
+          label:"Cantidad",   // ✅ AQUÍ ESTÁ LA CORRECCIÓN
+          data:[stats.inscripciones,stats.certificados],
+          backgroundColor:["#f59e0b","#22c55e"]
+        }]
+      },
+      options:{
+        scales:{ y:{ beginAtZero:true, ticks:{ precision:0 }}}
+      }
+    }
+  );
+
+  if(chartCrecimiento) chartCrecimiento.destroy();
+  chartCrecimiento = new Chart(
+    document.getElementById("chartCrecimiento"),
+    {
+      type:"line",
+      data:{
+        labels: historial.map(h=>h.t),
+        datasets:[
+          {
+            label:"Estudiantes",
+            data:historial.map(h=>h.e),
+            borderColor:"#7c3aed",
+            tension:.4
+          },
+          {
+            label:"Inscripciones",
+            data:historial.map(h=>h.i),
+            borderColor:"#f59e0b",
+            tension:.4
+          }
+        ]
+      }
+    }
+  );
+
+  const logs = await authFetch(`${API_URL}/api/admin/logs?limit=5`).then(r=>r.json());
+  const ul = document.getElementById("lista-actividad");
+  ul.innerHTML = "";
+  logs.forEach(l=>{
+    const li = document.createElement("li");
+    li.textContent = `${l.accion} — ${new Date(l.fecha).toLocaleString()}`;
+    ul.appendChild(li);
+  });
+}
+
+function actualizar(id, cardId, val){
+  const el = document.getElementById(id);
+  if(el.textContent != val){
+    el.textContent = val;
+    document.getElementById(cardId).classList.add("pulse");
+    setTimeout(()=>document.getElementById(cardId).classList.remove("pulse"),400);
+  }
+}
+
+cargarDashboard();
+setInterval(cargarDashboard, REFRESH_MS);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cursos Online (Cards)</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Extra: Cards layout (Udemy-like) */
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px;
+      align-items:center; margin: 14px 0 10px;
+      padding: 12px;
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 14px;
+      background: rgba(17,26,51,.45);
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+    }
+    .toolbar label{ margin-right: 6px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: repeat(2, 1fr);} }
+    @media (max-width: 640px){ .grid{ grid-template-columns: 1fr;} }
+
+    .card{
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 16px;
+      background: rgba(17,26,51,.45);
+      overflow:hidden;
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+      transition: transform .08s ease, background .15s ease;
+      display:flex; flex-direction:column;
+      min-height: 210px;
+    }
+    .card:hover{
+      transform: translateY(-1px);
+      background: rgba(17,26,51,.60);
+    }
+
+    .thumb{
+      height: 88px;
+      background:
+        radial-gradient(400px 120px at 20% 0%, rgba(124,58,237,.35), transparent 60%),
+        radial-gradient(400px 120px at 80% 0%, rgba(96,165,250,.25), transparent 60%),
+        rgba(15,24,51,.85);
+      border-bottom: 1px solid rgba(38,49,82,.75);
+      position: relative;
+    }
+    .chip{
+      position:absolute;
+      left: 12px; top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(38,49,82,.85);
+      background: rgba(17,26,51,.75);
+      color: rgba(226,232,240,.95);
+    }
+
+    .content{ padding: 12px 12px 10px; display:flex; flex-direction:column; gap:8px; flex:1; }
+    .title{ font-size: 16px; font-weight: 900; color:#fff; margin:0; line-height:1.25; }
+    .meta{ display:flex; gap:10px; flex-wrap:wrap; color: rgba(148,163,184,.95); font-size: 13px; }
+    .meta span{ display:inline-flex; gap:6px; align-items:center; }
+    .desc{ color: rgba(148,163,184,.9); font-size: 13px; line-height:1.45; margin:0; }
+
+    .actions{
+      padding: 10px 12px 12px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      border-top: 1px solid rgba(38,49,82,.65);
+    }
+    .actions .right{ display:flex; gap:10px; align-items:center; }
+    .link{ color:#60a5fa; font-weight:800; text-decoration:none; }
+    .link:hover{ text-decoration: underline; }
+
+    .pager{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 14px;
+      background: rgba(17,26,51,.45);
+    }
+    .pager .nums{ display:flex; gap:6px; flex-wrap:wrap; }
+
+    /* toast */
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      min-width: 240px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(17,26,51,.95);
+      border: 1px solid rgba(38,49,82,.9);
+      box-shadow: 0 10px 35px rgba(0,0,0,.35);
+      color: #e5e7eb;
+      z-index: 999;
+      display:none;
+    }
+    .toast.show{ display:block; }
+    .toast.success{ border-color: rgba(34,197,94,.55); }
+    .toast.error{ border-color: rgba(239,68,68,.55); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Inicio (Tabla)</a> |
+  <a href="index-cards.html">Inicio (Cards)</a> |
+  <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+  <a href="certificados.html" id="link-cert">Certificados</a>
+  <a href="estudiantes.html" id="link-estudiantes">Estudiantes</a> |
+  <a href="consultas.html" id="link-consultas">Consultas</a> |
+  <a href="login.html" id="link-login">Iniciar sesión</a> |
+  <a href="register.html" id="link-register">Registrarse</a> |
+  <a href="#" id="link-logout" onclick="logout(); return false;">Cerrar sesión</a>
+</nav>
+
+<div class="wrap">
+  <h1>Catálogo (Cards)</h1>
+  <p>Vista tipo Udemy: cards, chips de categoría, botón de inscripción y “Ver curso” si ya estás inscrito.</p>
+
+  <div class="toolbar">
+    <label><strong>Categoría:</strong></label>
+    <select id="filtro-categoria">
+      <option value="">Todas</option>
+      <option value="Programación">Programación</option>
+      <option value="Bases de datos">Bases de datos</option>
+      <option value="Desarrollo Web">Desarrollo Web</option>
+      <option value="Ciberseguridad">Ciberseguridad</option>
+      <option value="DevOps">DevOps</option>
+      <option value="Inteligencia Artificial">Inteligencia Artificial</option>
+    </select>
+
+    <label style="margin-left:8px;"><strong>Buscar:</strong></label>
+    <input id="buscador" type="text" placeholder="Buscar por nombre..." style="width:260px;">
+    <button id="btn-buscar">Buscar</button>
+  </div>
+
+  <div id="grid-cursos" class="grid"></div>
+
+  <div class="pager">
+    <button id="btn-prev">Anterior</button>
+    <div id="paginacion" class="nums"></div>
+    <button id="btn-next">Siguiente</button>
+    <span id="info-pagina"></span>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ========= auth helpers ========= */
+const API_URL = "http://localhost:3000";
+const estadoCursos = { pageActual: 1, limit: 10, totalPages: 1 };
+
+function getToken(){ return localStorage.getItem("token") || ""; }
+function getRol(){ return localStorage.getItem("rol") || ""; }
+function isLoggedIn(){ return !!getToken(); }
+
+function logout(){
+  localStorage.removeItem("token");
+  localStorage.removeItem("rol");
+  localStorage.removeItem("estudianteId");
+  localStorage.removeItem("pendingCourseId");
+  window.location.href = "login.html";
+}
+
+async function authFetch(url, options = {}) {
+  const token = getToken();
+  const headers = Object.assign({}, options.headers || {});
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const res = await fetch(url, Object.assign({}, options, { headers }));
+  if (res.status === 401) { logout(); throw new Error("Sesión expirada"); }
+  return res;
+}
+
+function aplicarMenuPorRol(){
+  const rol = getRol();
+  const linkMis = document.getElementById("link-mis-cursos");
+  const linkCert = document.getElementById("link-certificados");
+  const linkEst = document.getElementById("link-estudiantes");
+  const linkCon = document.getElementById("link-consultas");
+  const linkLogin = document.getElementById("link-login");
+  const linkReg = document.getElementById("link-register");
+  const linkLogout = document.getElementById("link-logout");
+
+  if (!isLoggedIn()){
+    if (linkMis) linkMis.style.display = "none";
+    if (linkCert) linkCert.style.display = "none";
+    if (linkEst) linkEst.style.display = "none";
+    if (linkCon) linkCon.style.display = "none";
+    if (linkLogout) linkLogout.style.display = "none";
+    if (linkLogin) linkLogin.style.display = "inline";
+    if (linkReg) linkReg.style.display = "inline";
+    return;
+  }
+
+  if (linkLogin) linkLogin.style.display = "none";
+  if (linkReg) linkReg.style.display = "none";
+  if (linkLogout) linkLogout.style.display = "inline";
+
+  if (rol !== "admin"){
+    if (linkEst) linkEst.style.display = "none";
+    if (linkCon) linkCon.style.display = "none";
+  }
+}
+
+function toast(msg, type="success"){
+  const el = document.getElementById("toast");
+  el.className = `toast show ${type}`;
+  el.textContent = msg;
+  setTimeout(()=>{ el.className = "toast"; }, 2200);
+}
+
+/* ========= catalog ========= */
+document.addEventListener("DOMContentLoaded", () => {
+  aplicarMenuPorRol();
+
+  document.getElementById("filtro-categoria").addEventListener("change", () => {
+    estadoCursos.pageActual = 1;
+    cargarCursos(1);
+  });
+
+  document.getElementById("btn-buscar").addEventListener("click", () => {
+    estadoCursos.pageActual = 1;
+    cargarCursos(1);
+  });
+
+  document.getElementById("buscador").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      estadoCursos.pageActual = 1;
+      cargarCursos(1);
+    }
+  });
+
+  document.getElementById("btn-prev").addEventListener("click", () => {
+    if (estadoCursos.pageActual > 1) {
+      estadoCursos.pageActual--;
+      cargarCursos(estadoCursos.pageActual);
+    }
+  });
+
+  document.getElementById("btn-next").addEventListener("click", () => {
+    if (estadoCursos.pageActual < estadoCursos.totalPages) {
+      estadoCursos.pageActual++;
+      cargarCursos(estadoCursos.pageActual);
+    }
+  });
+
+  cargarCursos(1);
+});
+
+async function cargarCursos(page=1){
+  const categoria = document.getElementById("filtro-categoria").value || "";
+  const q = document.getElementById("buscador").value.trim() || "";
+
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(estadoCursos.limit));
+  if (categoria) params.set("categoria", categoria);
+  if (q) params.set("q", q);
+
+  const respCursos = await fetch(`${API_URL}/api/cursos?${params.toString()}`).then(r=>r.json());
+  const cursos = respCursos.data || [];
+  estadoCursos.pageActual = respCursos.page || page;
+  estadoCursos.totalPages = respCursos.totalPages || 1;
+
+  // inscritos si estudiante logueado
+  let inscritos = [];
+  if (isLoggedIn() && getRol()==="estudiante"){
+    try{
+      const r = await authFetch(`${API_URL}/api/progreso/me`);
+      const data = await r.json();
+      if (Array.isArray(data)){
+        inscritos = data.map(p => typeof p.cursoId==="string" ? p.cursoId : (p.cursoId?.$oid || String(p.cursoId)));
+      }
+    }catch{ inscritos = []; }
+  }
+
+  const grid = document.getElementById("grid-cursos");
+  grid.innerHTML = "";
+
+  cursos.forEach(c => {
+    const estaInscrito = inscritos.includes(c._id);
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="thumb"><div class="chip">${c.categoria}</div></div>
+      <div class="content">
+        <p class="title">${c.nombre}</p>
+        <div class="meta">
+          <span>⏱ ${c.duracionHoras} h</span>
+          <span>📌 ${c.categoria}</span>
+        </div>
+        <p class="desc">Curso estructurado en lecciones con progreso y certificación automática al completar.</p>
+      </div>
+      <div class="actions">
+        <div class="left">
+          ${estaInscrito && getRol()==="estudiante" ? '<span class="badge badge-success">Inscrito ✅</span>' : ''}
+        </div>
+        <div class="right" id="act-${c._id}"></div>
+      </div>
+    `;
+
+    const act = card.querySelector(`#act-${CSS.escape(c._id)}`);
+
+    if (!isLoggedIn()){
+      act.innerHTML = `<button onclick="inscribirLanding('${c._id}', this)">Inscribirse</button>`;
+    } else if (getRol()!=="estudiante"){
+      act.innerHTML = `<button disabled>Solo estudiante</button>`;
+    } else if (estaInscrito){
+      act.innerHTML = `curso.html?cursoId=${c._id}Ver curso</a>`;
+    } else {
+      act.innerHTML = `<button onclick="inscribirLanding('${c._id}', this)">Inscribirse</button>`;
+    }
+
+    grid.appendChild(card);
+  });
+
+  renderPaginacion();
+}
+
+function renderPaginacion(){
+  document.getElementById("info-pagina").textContent = `Página ${estadoCursos.pageActual} de ${estadoCursos.totalPages}`;
+  document.getElementById("btn-prev").disabled = estadoCursos.pageActual <= 1;
+  document.getElementById("btn-next").disabled = estadoCursos.pageActual >= estadoCursos.totalPages;
+
+  const cont = document.getElementById("paginacion");
+  cont.innerHTML = "";
+
+  const total = estadoCursos.totalPages;
+  const actual = estadoCursos.pageActual;
+  const maxBotones = 7;
+
+  let inicio = Math.max(actual - 3, 1);
+  let fin = Math.min(inicio + maxBotones - 1, total);
+  inicio = Math.max(fin - maxBotones + 1, 1);
+
+  if (inicio > 1){
+    cont.appendChild(btnPag(1, actual===1));
+    if (inicio > 2) cont.appendChild(dots());
+  }
+
+  for (let p=inicio; p<=fin; p++){
+    cont.appendChild(btnPag(p, p===actual));
+  }
+
+  if (fin < total){
+    if (fin < total - 1) cont.appendChild(dots());
+    cont.appendChild(btnPag(total, actual===total));
+  }
+}
+
+function btnPag(p, active){
+  const b = document.createElement("button");
+  b.textContent = String(p);
+  b.disabled = active;
+  b.style.minWidth = "38px";
+  b.onclick = () => { estadoCursos.pageActual = p; cargarCursos(p); };
+  return b;
+}
+function dots(){
+  const s = document.createElement("span");

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Centrado tipo Udemy/Coursera */
+    .auth-page{
+      min-height: calc(100vh - 70px);
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+    }
+    .auth-card{
+      width: min(520px, 100%);
+      background: rgba(17,26,51,.55);
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 16px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.35);
+      padding: 18px 18px 16px;
+    }
+    .auth-card h1{
+      margin: 4px 0 8px;
+      font-size: 34px;
+    }
+    .auth-card p{
+      margin: 0 0 14px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .field input{
+      width: 100%;
+    }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .msg{
+      color: rgba(226,232,240,.95);
+      font-weight: 700;
+    }
+    .small-link{
+      color: #60a5fa;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .small-link:hover{
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav opcional. Si no quieres nav en login, puedes borrarlo -->
+  <nav>
+    <a href="index.html">Inicio</a>
+  </nav>
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <h1>Iniciar sesión</h1>
+
+      <p>
+        ¿No tienes cuenta? <a class="small-link" href="register.html">Regístrate aquí</a>.
+      </p>
+
+      <!-- ✅ CAMBIO CLAVE: envolver inputs + botón en un FORM -->
+      <form id="login-form">
+
+        <div class="field">
+          <label for="email"><strong>Email:</strong></label>
+          <input
+            id="email"
+            type="email"
+            placeholder="tu_correo@ejemplo.com"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="password"><strong>Password:</strong></label>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <div class="actions">
+          <!-- ✅ IMPORTANTE: type submit para que Enter dispare el login -->
+          <button id="btn-login" type="submit">Entrar</button>
+          <span id="msg" class="msg"></span>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3000";
+
+    // ✅ CAMBIO CLAVE: escuchar SUBMIT (Enter funciona automáticamente)
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault(); // evita recargar la página
+      await login();
+    });
+
+    // (Opcional) Deja el click también, no hace daño
+    // document.getElementById("btn-login").addEventListener("click", login);
+
+    // (Opcional) UX: enfocar email al abrir
+    document.addEventListener("DOMContentLoaded", () => {
+      const email = document.getElementById("email");
+      if (email) email.focus();
+    });
+
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+      msg.textContent = "Validando...";
+
+      try {
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Error de login");
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("rol", data.rol || "");
+        localStorage.setItem("estudianteId", data.estudianteId || "");
+
+        // Auto-inscripción si venía desde catálogo
+        const pendingCourseId = localStorage.getItem("pendingCourseId");
+        if (pendingCourseId && data.rol === "estudiante") {
+          await fetch(`${API_URL}/api/progreso`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + data.token
+            },
+            body: JSON.stringify({ cursoId: pendingCourseId })
+          });
+          localStorage.removeItem("pendingCourseId");
+        }
+
+        msg.textContent = "✅ OK";
+
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get("redirect") || "index.html";
+        window.location.href = redirect;
+
+      } catch (e) {
+        msg.textContent = "❌ " + e.message;
+      }
+    }
+  </script>
+</body>
+</html>

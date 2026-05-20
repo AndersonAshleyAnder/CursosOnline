@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Estudiantes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav-container">
+  
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html">Estudiantes</a>
+    <a href="consultas.html">Consultas</a>
+    <a href="dashboard-admin.html">Dashboard</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+
+</nav>
+
+
+<main class="layout">
+
+  <h1>Gestión de Estudiantes (Admin)</h1>
+  <p>Solo el administrador puede acceder a esta sección.</p>
+
+  <p id="total" style="font-weight:700;"></p>
+
+  <!-- BUSCAR -->
+  <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
+    <input id="buscar" placeholder="Buscar por nombre, apellido o email" style="flex:1;">
+    <button onclick="cargar()">Buscar</button>
+    <button onclick="exportarCSV()">Exportar CSV</button>
+  </div>
+
+  <!-- CREAR -->
+  <h2>Crear estudiante</h2>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; max-width:820px; margin-bottom:24px;">
+    <input id="nombre" placeholder="Nombre">
+    <input id="apellido" placeholder="Apellido">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Contraseña">
+    <button onclick="crear()">Crear</button>
+  </div>
+
+  <!-- TABLA -->
+  <h2>Listado</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th style="text-align:right;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+
+  <!-- PAGINACIÓN -->
+  <div style="display:flex; gap:8px; margin-top:16px;">
+    <button onclick="prev()">Anterior</button>
+    <span id="pagina"></span>
+    <button onclick="next()">Siguiente</button>
+  </div>
+
+</main>
+
+<!-- MODAL EDITAR -->
+<div id="modal"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,.6);
+            align-items:center; justify-content:center;
+            z-index:9999;">
+  <div style="background:#111a33; padding:20px; border-radius:14px; width:340px;">
+    <h3>Editar estudiante</h3>
+
+    <input id="m-nombre" placeholder="Nombre" style="margin-top:10px;">
+    <input id="m-apellido" placeholder="Apellido" style="margin-top:10px;">
+    <input id="m-email" placeholder="Email" style="margin-top:10px;">
+
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button onclick="guardarEdicion()">Guardar</button>
+      <button onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"
+     style="position:fixed; bottom:24px; right:24px;
+            background:#111a33; color:#fff;
+            padding:12px 16px; border-radius:12px;
+            box-shadow:0 10px 30px rgba(0,0,0,.35);
+            display:none; z-index:9999;">
+</div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-box">Procesando…</div>
+</div>
+  <div style="background:#111a33; padding:20px 26px; border-radius:14px;">
+    Procesando…
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+let usuarios = [];
+let page = 1;
+const limit = 5;
+let editId = null;
+
+/* UX */
+function showToast(msg, ok=true){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.background = ok ? "#22c55e" : "#ef4444";
+  t.style.display = "block";
+  setTimeout(()=>t.style.display="none",2500);
+}
+function showLoader(v){
+  document.getElementById("loader").style.display = v ? "block" : "none";
+}
+
+/* DATA */
+async function cargar(){
+  try{
+    showLoader(true);
+    const q = buscar.value || "";
+    const res = await authFetch(`/api/admin/usuarios?q=${encodeURIComponent(q)}`);
+    usuarios = await res.json();
+    total.textContent = `Total estudiantes: ${usuarios.length}`;
+    page = 1;
+    render();
+  }catch(e){
+    showToast(e.message,false);
+  }finally{
+    showLoader(false);
+  }
+}
+
+function render(){
+  const tbody = document.getElementById("tabla");
+  tbody.innerHTML = "";
+
+  usuarios.slice((page-1)*limit, page*limit).forEach(u=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${u.nombre||""} ${u.apellido||""}</td>
+      <td>${u.email}</td>
+      <td style="text-align:right;">
+        <button onclick="editar('${u._id}')">✏️</button>
+        <button onclick="resetPass('${u._id}')">🔑</button>
+        <button onclick="eliminar('${u._id}')">🗑</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  pagina.textContent = `Página ${page} de ${Math.ceil(usuarios.length/limit)}`;
+}
+
+function next(){ if(page*limit<usuarios.length){page++;render();}}
+function prev(){ if(page>1){page--;render();}}
+
+/* ACTIONS */
+async function crear(){
+  try{
+    showLoader(true);
+    await authFetch("/api/admin/usuarios",{
+      method:"POST",
+      body:JSON.stringify({
+        nombre:nombre.value,
+        apellido:apellido.value,
+        email:email.value,
+        password:password.value
+      })
+    });
+    nombre.value=apellido.value=email.value=password.value="";
+    showToast("✅ Estudiante creado");
+    cargar();
+  }catch(e){
+    showToast(e.message,false);
+  }finally{ showLoader(false); }
+}
+
+function editar(id){
+  const u = usuarios.find(x=>x._id===id);
+  editId = id;
+  document.getElementById("m-nombre").value = u.nombre||"";
+  document.getElementById("m-apellido").value = u.apellido||"";
+  document.getElementById("m-email").value = u.email||"";
+  modal.style.display="flex";
+}
+
+async function guardarEdicion(){
+  try{
+    showLoader(true);
+    await authFetch(`/api/admin/usuarios/${editId}`,{
+      method:"PUT",
+      body:JSON.stringify({
+        nombre: document.getElementById("m-nombre").value,
+        apellido: document.getElementById("m-apellido").value,
+        email: document.getElementById("m-email").value
+      })
+    });
+    cerrarModal();
+    showToast("✅ Usuario actualizado");
+    cargar();
+  }catch(e){
+    showToast(e.message,false);
+  }finally{ showLoader(false); }
+}
+
+function cerrarModal(){ modal.style.display="none"; }
+
+async function eliminar(id){
+  if(!confirm("¿Eliminar este usuario?")) return;
+  try{
+    showLoader(true);
+    await authFetch(`/api/admin/usuarios/${id}`,{method:"DELETE"});
+    showToast("🗑 Usuario eliminado");
+    cargar();
+  }catch(e){
+    showToast(e.message,false);
+  }finally{ showLoader(false); }
+}
+
+async function resetPass(id){
+  const pass = prompt("Nueva contraseña:");
+  if(!pass) return;
+  try{
+    showLoader(true);
+    await authFetch(`/api/admin/usuarios/${id}/reset-password`,{
+      method:"PUT",
+      body:JSON.stringify({password:pass})
+    });
+    showToast("🔑 Contraseña actualizada");
+  }catch(e){
+    showToast(e.message,false);
+  }finally{ showLoader(false); }
+}
+
+/* CSV */
+function exportarCSV(){
+  const rows = [["Nombre","Apellido","Email"]];
+  usuarios.forEach(u=>rows.push([u.nombre,u.apellido,u.email]));
+  const csv = rows.map(r=>r.join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download = "estudiantes.csv";
+  a.click();
+}
+
+cargar();
+</script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cursos Online</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px;
+      align-items:center; margin: 14px 0 10px;
+      padding: 12px;
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 14px;
+      background: rgba(17,26,51,.45);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 980px){ .grid{ grid-template-columns: repeat(2, 1fr);} }
+    @media (max-width: 640px){ .grid{ grid-template-columns: 1fr;} }
+
+    /* ✅ CARD MEJORADA + ANIMACIÓN */
+    .card{
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 16px;
+      background: rgba(17,26,51,.45);
+      overflow:hidden;
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+      display:flex; flex-direction:column;
+      min-height: 220px;
+      cursor: pointer;
+
+      /* ✅ animación entrada */
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeCard 0.4s ease forwards;
+    }
+
+    /* ✅ delay progresivo */
+    .card:nth-child(1){ animation-delay:.05s; }
+    .card:nth-child(2){ animation-delay:.1s; }
+    .card:nth-child(3){ animation-delay:.15s; }
+    .card:nth-child(4){ animation-delay:.2s; }
+    .card:nth-child(5){ animation-delay:.25s; }
+    .card:nth-child(6){ animation-delay:.3s; }
+
+    .card:hover{
+      transform: translateY(-4px) scale(1.02);
+      background: rgba(17,26,51,.65);
+      box-shadow: 0 20px 45px rgba(0,0,0,.45);
+    }
+
+    /* ✅ animación key */
+    @keyframes fadeCard{
+      to{
+        opacity:1;
+        transform: translateY(0);
+      }
+    }
+
+    .thumb{
+      height: 88px;
+      background:
+        radial-gradient(400px 120px at 20% 0%, rgba(124,58,237,.35), transparent 60%),
+        radial-gradient(400px 120px at 80% 0%, rgba(96,165,250,.25), transparent 60%),
+        rgba(15,24,51,.85);
+      border-bottom: 1px solid rgba(38,49,82,.75);
+      position: relative;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .chip{
+      position:absolute;
+      left: 12px; top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(38,49,82,.85);
+      background: rgba(17,26,51,.75);
+    }
+
+    .content{
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      flex:1;
+    }
+
+    .title{
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .meta{
+      display:flex;
+      gap:10px;
+      color: rgba(148,163,184,.95);
+      font-size: 13px;
+    }
+
+    .desc{
+      color: rgba(148,163,184,.9);
+      font-size: 13px;
+    }
+
+    .actions{
+      padding: 10px;
+      display:flex;
+      justify-content:space-between;
+      border-top: 1px solid rgba(38,49,82,.65);
+    }
+
+    .pager{
+      display:flex;
+      gap:10px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 14px;
+      background: rgba(17,26,51,.45);
+    }
+
+    .modal-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-overlay.show{ display: flex; }
+
+    .modal{
+      width: min(900px, 100%);
+      background: rgba(17,26,51,.92);
+      border-radius: 18px;
+      overflow: hidden;
+
+      /* ✅ animación modal */
+      animation: modalScale 0.25s ease;
+    }
+
+    @keyframes modalScale {
+      from{
+        transform: scale(.9);
+        opacity: 0;
+      }
+      to{
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .mini-link{ color:#60a5fa; }
+  </style>
+</head>
+
+<body>
+
+<nav class="nav-container">
+  
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html" id="link-est">Estudiantes</a>
+<a href="consultas.html" id="link-con">Consultas</a>
+<a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
+  </div>
+
+<div class="nav-right">
+  <a href="login.html" id="link-login">Iniciar sesión</a>
+  <a href="register.html" id="link-register">Registrarse</a>
+  <a href="#" id="link-logout">Cerrar sesión</a>
+</div>
+
+</nav>
+
+
+<div class="wrap">
+  <h1>Plataforma de Cursos Online</h1>
+
+  <p>
+    Explora cursos disponibles. Puedes ver el catálogo sin registrarte.
+  </p>
+
+  <h2>Cursos disponibles</h2>
+
+  <div class="toolbar">
+<select id="filtro-categoria">
+  <option value="">Todas</option>
+  <option value="Programación">Programación</option>
+  <option value="Bases de datos">Bases de datos</option>
+  <option value="Desarrollo Web">Desarrollo Web</option>
+  <option value="Ciberseguridad">Ciberseguridad</option>
+  <option value="DevOps">DevOps</option>
+  <option value="Inteligencia Artificial">Inteligencia Artificial</option>
+</select>
+
+    <input id="buscador" placeholder="Buscar...">
+    <button id="btn-buscar">Buscar</button>
+  </div>
+
+  <div id="grid-cursos" class="grid"></div>
+
+  <div class="pager">
+    <button id="btn-prev">Anterior</button>
+    <button id="btn-next">Siguiente</button>
+  </div>
+</div>
+
+<!-- ✅ PAGINACIÓN -->
+<div class="paginacion-wrapper">
+  <button id="btn-prev">Anterior</button>
+
+  <div id="paginacion"></div>
+
+  <button id="btn-next">Siguiente</button>
+</div>
+
+<p id="info-pagina"></p>
+
+<script src="app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  aplicarMenuPorRol();       // ✅ ESTA ES LA CLAVE
+  inicializarListadoCursos();
+});
+</script>
+
+<!-- ✅ TOAST (SOLO UNA VEZ ✅) -->
+<div id="toast" class="toast"></div>
+
+<!-- ✅ MODAL PREVIEW -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal">
+
+    <!-- ✅ HERO -->
+    <div id="modal-hero" class="modal-hero">
+      <span id="modal-chip" class="chip hero-chip"></span>
+    </div>
+
+    <!-- ✅ CONTENIDO -->
+    <div class="modal-content">
+
+      <h2 id="modal-title"></h2>
+
+      <div id="modal-meta"></div>
+
+      <ul id="modal-bullets"></ul>
+
+      <p id="modal-desc"></p>
+
+      <div id="modal-actions"></div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

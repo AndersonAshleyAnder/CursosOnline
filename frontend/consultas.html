@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Consultas (Admin)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav-container">
+  
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html">Estudiantes</a>
+    <a href="consultas.html">Consultas</a>
+    <a href="dashboard-admin.html">Dashboard</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+
+</nav>
+
+
+<main class="layout">
+  <h1>Módulo de Consultas (Admin)</h1>
+  <p>Esta vista es exclusiva para administradores.</p>
+
+  <!-- 1) Totales -->
+  <div class="section-card">
+    <div class="section-head">
+      <h2>📊 Totales de estudiantes por curso</h2>
+      <small>Clic en encabezados para ordenar</small>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tbl-totales">
+        <thead>
+          <tr>
+            <th class="sortable" data-table="totales" data-key="curso" data-type="text">
+              Curso <span class="sort-icon">⇅</span>
+            </th>
+            <th class="sortable" data-table="totales" data-key="total" data-type="number" style="text-align:right;">
+              Total <span class="sort-icon">⇅</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="totales-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2) Promedios -->
+  <div class="section-card">
+    <div class="section-head">
+      <h2>📈 Promedio de progreso por curso</h2>
+      <small>Clic en encabezados para ordenar</small>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tbl-promedios">
+        <thead>
+          <tr>
+            <th class="sortable" data-table="promedios" data-key="curso" data-type="text">
+              Curso <span class="sort-icon">⇅</span>
+            </th>
+            <th class="sortable" data-table="promedios" data-key="promedio" data-type="number" style="text-align:right;">
+              Promedio (%) <span class="sort-icon">⇅</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="promedios-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3) Ranking -->
+  <div class="section-card">
+    <div class="section-head">
+      <h2>🏆 Ranking Top cursos más completados</h2>
+      <small>Clic en encabezados para ordenar</small>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tbl-ranking">
+        <thead>
+          <tr>
+            <th class="sortable" data-table="ranking" data-key="curso" data-type="text">
+              Curso <span class="sort-icon">⇅</span>
+            </th>
+            <th class="sortable" data-table="ranking" data-key="completados" data-type="number" style="text-align:right;">
+              Completados <span class="sort-icon">⇅</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="ranking-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4) Top calificados -->
+  <div class="section-card">
+    <div class="section-head">
+      <h2>⭐ Top 5 cursos mejor calificados (mínimo 3 reseñas)</h2>
+      <small>Solo cursos con ≥ 3 reseñas</small>
+    </div>
+
+    <div class="table-wrap" style="max-height: 280px;">
+      <table id="tbl-top">
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th>Categoría</th>
+            <th style="text-align:right;">Promedio ⭐</th>
+            <th style="text-align:right;"># Reseñas</th>
+          </tr>
+        </thead>
+        <tbody id="top-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5) Promedio por categoría -->
+  <div class="section-card">
+    <div class="section-head">
+      <h2>📌 Promedio de calificación por categoría</h2>
+      <small>Promedio real por categoría</small>
+    </div>
+
+    <div class="table-wrap" style="max-height: 280px;">
+      <table id="tbl-categorias">
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th style="text-align:right;">Promedio ⭐</th>
+            <th style="text-align:right;"># Reseñas</th>
+          </tr>
+        </thead>
+        <tbody id="cat-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+/* =========================
+   Estado de ordenamiento
+========================= */
+const sortState = {
+  totales: { key: "total", dir: "desc" },
+  promedios: { key: "promedio", dir: "desc" },
+  ranking: { key: "completados", dir: "desc" }
+};
+
+const dataState = {
+  totales: [],
+  promedios: [],
+  ranking: []
+};
+
+/* =========================
+   Skeleton helpers
+========================= */
+function skeletonTableRows(tbodyId, cols, rows = 6) {
+  const tbody = document.getElementById(tbodyId);
+  let html = "";
+  for (let i = 0; i < rows; i++) {
+    html += `<tr class="skeleton-row">`;
+    for (let c = 0; c < cols; c++) {
+      if (c === cols - 1) {
+        html += `
+          <td>
+            <div class="skeleton-metric">
+              <div class="skeleton-badge"></div>
+              <div class="skeleton-mini"></div>
+            </div>
+          </td>`;
+      } else {
+        const w = (i % 4 === 0) ? "skeleton-w-60" : (i % 4 === 1) ? "skeleton-w-45" : (i % 4 === 2) ? "skeleton-w-35" : "skeleton-w-25";
+        html += `<td><div class="skeleton-line ${w}"></div></td>`;
+      }
+    }
+    html += `</tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+function emptyRow(colspan, msg){
+  return `<tr><td colspan="${colspan}" class="table-empty">${msg}</td></tr>`;
+}
+
+/* =========================
+   Helpers UI
+========================= */
+
+function renderStars(promedio) {
+  const valor = Math.max(0, Math.round(Number(promedio || 0)));
+  return "⭐".repeat(valor);
+}
+
+function barClass(pct) {
+  if (pct < 34) return "bar-low";
+  if (pct < 67) return "bar-mid";
+  return "bar-high";
+}
+
+function metricCellHTML(value, max, suffix) {
+  const v = Number(value || 0);
+  const m = Math.max(Number(max || 1), 1);
+  const pct = Math.round((v / m) * 100);
+  const cls = barClass(pct);
+  const suf = suffix ? String(suffix) : "";
+
+  return `
+    <div class="metric-cell">
+      <span class="badge">${v}${suf}</span>
+      <div class="mini-bar"><span class="${cls}" style="width:${pct}%"></span></div>
+    </div>
+  `;
+}
+
+function sortRows(rows, key, dir, type) {
+  const mult = dir === "asc" ? 1 : -1;
+  const copy = rows.slice();
+  copy.sort((a, b) => {
+    const A = a[key];
+    const B = b[key];
+    if (type === "number") return ((Number(A) || 0) - (Number(B) || 0)) * mult;
+    return String(A || "").localeCompare(String(B || ""), "es", { numeric: true, sensitivity: "base" }) * mult;
+  });
+  return copy;
+}
+
+/* =========================
+   Merge por nombre (consistencia)
+========================= */
+function mergeSumByCurso(rows, key) {
+  const map = new Map();
+  rows.forEach(r => {
+    const k = String(r.curso || "").trim().toLowerCase();
+    if (!map.has(k)) map.set(k, { ...r });
+    else map.get(k)[key] = (Number(map.get(k)[key] || 0) + Number(r[key] || 0));
+  });
+  return Array.from(map.values());
+}
+
+function mergeMaxByCurso(rows, key) {
+  const map = new Map();
+  rows.forEach(r => {
+    const k = String(r.curso || "").trim().toLowerCase();
+    if (!map.has(k)) map.set(k, { ...r });
+    else map.get(k)[key] = Math.max(Number(map.get(k)[key] || 0), Number(r[key] || 0));
+  });
+  return Array.from(map.values());
+}
+
+/* =========================
+   Render por tabla
+========================= */
+function renderTotales() {
+  const tbody = document.getElementById("totales-body");
+  const st = sortState.totales;
+  const rows = sortRows(dataState.totales, st.key, st.dir, st.key === "total" ? "number" : "text");
+  const max = Math.max(...rows.map(r => Number(r.total || 0)), 1);
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.curso}</td>
+      <td style="text-align:right;">${metricCellHTML(r.total, max, "")}</td>
+    </tr>
+  `).join("");
+}
+
+function renderPromedios() {
+  const tbody = document.getElementById("promedios-body");
+  const st = sortState.promedios;
+  const rows = sortRows(dataState.promedios, st.key, st.dir, st.key === "promedio" ? "number" : "text");
+  const max = Math.max(...rows.map(r => Number(r.promedio || 0)), 1);
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.curso}</td>
+      <td style="text-align:right;">${metricCellHTML(r.promedio, max, "%")}</td>
+    </tr>
+  `).join("");
+}
+
+function renderRanking() {
+  const tbody = document.getElementById("ranking-body");
+  const st = sortState.ranking;
+  const rows = sortRows(dataState.ranking, st.key, st.dir, st.key === "completados" ? "number" : "text");
+  const max = Math.max(...rows.map(r => Number(r.completados || 0)), 1);
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.curso}</td>
+      <td style="text-align:right;">${metricCellHTML(r.completados, max, "")}</td>
+    </tr>
+  `).join("");
+}
+
+/* =========================
+   Carga de datos + Skeleton
+========================= */
+async function cargarTodo() {
+  if (typeof aplicarMenuPorRol === "function") aplicarMenuPorRol();
+  if (localStorage.getItem("rol") !== "admin") {
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Skeletons
+  skeletonTableRows("totales-body", 2, 7);
+  skeletonTableRows("promedios-body", 2, 7);
+  skeletonTableRows("ranking-body", 2, 7);
+  skeletonTableRows("top-body", 4, 5);
+  skeletonTableRows("cat-body", 3, 5);
+
+  // Totales
+  try {
+    const data = await authFetch(API_URL + "/api/consultas/totales-por-curso").then(r => r.json());
+    dataState.totales = mergeSumByCurso(Array.isArray(data) ? data : [], "total");
+    if (dataState.totales.length === 0) {
+      document.getElementById("totales-body").innerHTML = emptyRow(2, "No hay datos para mostrar.");
+    } else {
+      renderTotales();
+    }
+  } catch (e) {
+    document.getElementById("totales-body").innerHTML = emptyRow(2, "Error cargando datos.");
+  }
+
+  // Promedios
+  try {
+    const data = await authFetch(API_URL + "/api/consultas/promedio-progreso").then(r => r.json());
+    dataState.promedios = mergeMaxByCurso(Array.isArray(data) ? data : [], "promedio");
+    if (dataState.promedios.length === 0) {
+      document.getElementById("promedios-body").innerHTML = emptyRow(2, "No hay datos para mostrar.");
+    } else {
+      renderPromedios();
+    }
+  } catch (e) {
+    document.getElementById("promedios-body").innerHTML = emptyRow(2, "Error cargando datos.");
+  }
+
+  // Ranking
+  try {
+    const data = await authFetch(API_URL + "/api/consultas/ranking-completados").then(r => r.json());
+    dataState.ranking = mergeSumByCurso(Array.isArray(data) ? data : [], "completados");
+    if (dataState.ranking.length === 0) {
+      document.getElementById("ranking-body").innerHTML = emptyRow(2, "Aún no hay cursos completados.");
+    } else {
+      renderRanking();
+    }
+  } catch (e) {
+    document.getElementById("ranking-body").innerHTML = emptyRow(2, "Error cargando datos.");
+  }
+
+  // Top calificados
+  try {
+    const data = await authFetch(API_URL + "/api/consultas/top-calificados").then(r => r.json());
+    const tbody = document.getElementById("top-body");
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = emptyRow(4, "Aún no hay cursos con mínimo 3 reseñas.");
+    } else {
+      tbody.innerHTML = data.map(x => `
+        <tr>
+          <td>${x.curso}</td>
+          <td>${x.categoria}</td>
+          <td style="text-align:right;">
+  <span style="color:gold; font-size:16px;">${renderStars(x.promedio)}</span>
+  <span style="color:#9ca3af; font-size:12px; margin-left:4px;">(${x.promedio})</span>
+</td>
+          <td style="text-align:right;"><span class="badge">${x.total}</span></td>
+        </tr>
+      `).join("");
+    }
+  } catch (e) {
+    document.getElementById("top-body").innerHTML = emptyRow(4, "Error cargando datos.");
+  }
+
+  // Promedio por categoría
+  try {
+    const data = await authFetch(API_URL + "/api/consultas/promedio-por-categoria").then(r => r.json());
+    const tbody = document.getElementById("cat-body");
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = emptyRow(3, "No hay reseñas suficientes por categoría.");
+    } else {
+      tbody.innerHTML = data.map(x => `
+        <tr>
+          <td>${x.categoria}</td>
+          <td style="text-align:right;">
+  <span style="color:gold; font-size:16px;">${renderStars(x.promedio)}</span>
+  <span style="color:#9ca3af; font-size:12px; margin-left:4px;">(${x.promedio})</span>
+</td>
+          <td style="text-align:right;"><span class="badge">${x.total}</span></td>
+        </tr>
+      `).join("");
+    }
+  } catch (e) {
+    document.getElementById("cat-body").innerHTML = emptyRow(3, "Error cargando datos.");
+  }
+
+  markDefaultSortVisual();
+}
+
+/* =========================
+   Ordenamiento click
+========================= */
+function clearSortClasses(scopeTable, groupKey) {
+  scopeTable.querySelectorAll("th.sortable").forEach(th => {
+    if (th.dataset.table === groupKey) th.classList.remove("asc", "desc");
+  });
+}
+
+function markDefaultSortVisual() {
+  ["totales", "promedios", "ranking"].forEach(group => {
+    const th = document.querySelector(`th.sortable[data-table="${group}"][data-key="${sortState[group].key}"]`);
+    if (th) th.classList.add(sortState[group].dir);
+  });
+}
+
+function activarOrdenamiento() {
+  document.querySelectorAll("th.sortable").forEach(th => {
+    th.addEventListener("click", () => {
+      const group = th.dataset.table;
+      const key = th.dataset.key;
+      const type = th.dataset.type;
+
+      if (!sortState[group]) return;
+
+      if (sortState[group].key === key) {
+        sortState[group].dir = (sortState[group].dir === "asc") ? "desc" : "asc";
+      } else {
+        sortState[group].key = key;
+        sortState[group].dir = (type === "number") ? "desc" : "asc";
+      }
+
+      const table = th.closest("table");
+      clearSortClasses(table, group);
+      th.classList.add(sortState[group].dir);
+
+      if (group === "totales") renderTotales();
+      if (group === "promedios") renderPromedios();
+      if (group === "ranking") renderRanking();
+    });
+  });
+}
+
+/* =========================
+   Init
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  activarOrdenamiento();
+  cargarTodo();
+});
+</script>
+
+</body>
+</html>

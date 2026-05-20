@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cursos Online (Sidebar)</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Coursera-like layout */
+    .app{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 0px);
+    }
+    @media (max-width: 920px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ position: sticky; top: 0; z-index: 20; }
+    }
+
+    .sidebar{
+      background: rgba(17,26,51,.55);
+      border-right: 1px solid rgba(38,49,82,.75);
+      padding: 16px;
+    }
+    .brand{
+      font-weight: 1000;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color:#fff;
+    }
+    .menu{
+      display:flex; flex-direction:column; gap:6px;
+      margin-top: 10px;
+    }
+    .menu a{
+      display:flex; gap:10px; align-items:center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: rgba(15,24,51,.45);
+      color: rgba(226,232,240,.95);
+      text-decoration:none;
+      font-weight: 800;
+    }
+    .menu a:hover{
+      border-color: rgba(124,58,237,.35);
+      background: rgba(124,58,237,.10);
+    }
+
+    .userbox{
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(38,49,82,.75);
+      background: rgba(15,24,51,.55);
+      color: rgba(226,232,240,.95);
+    }
+    .userbox small{ color: rgba(148,163,184,.95); display:block; margin-top:4px; }
+
+    .main{
+      padding: 18px;
+      max-width: 1100px;
+    }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px;
+      align-items:center; margin: 14px 0 10px;
+      padding: 12px;
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 14px;
+      background: rgba(17,26,51,.45);
+    }
+
+    .pager{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid rgba(38,49,82,.75);
+      border-radius: 14px;
+      background: rgba(17,26,51,.45);
+    }
+    .pager .nums{ display:flex; gap:6px; flex-wrap:wrap; }
+
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      min-width: 240px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(17,26,51,.95);
+      border: 1px solid rgba(38,49,82,.9);
+      box-shadow: 0 10px 35px rgba(0,0,0,.35);
+      color: #e5e7eb;
+      z-index: 999;
+      display:none;
+    }
+    .toast.show{ display:block; }
+    .toast.success{ border-color: rgba(34,197,94,.55); }
+    .toast.error{ border-color: rgba(239,68,68,.55); }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">🎓 Cursos Online</div>
+
+    <div class="menu">
+      <a href="index.html">🏠 Inicio (Tabla)</a>
+      <a href="index-cards.html">🧩 Inicio (Cards)</a>
+      <a href="index-sidebar.html">📚 Inicio (Sidebar)</a>
+      <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+      <a href="certificados.html" id="link-cert">Certificados</a>
+      <a href="estudiantes.html" id="link-estudiantes">🧑‍💼 Estudiantes</a>
+      <a href="consultas.html" id="link-consultas">📊 Consultas</a>
+      <a href="login.html" id="link-login">🔐 Iniciar sesión</a>
+      <a href="register.html" id="link-register">📝 Registrarse</a>
+      <a href="#" id="link-logout" onclick="logout(); return false;">🚪 Cerrar sesión</a>
+    </div>
+
+    <div class="userbox">
+      <strong>Estado:</strong> <span id="estado-login">Visitante</span>
+      <small id="estado-rol"></small>
+    </div>
+  </aside>
+
+  <main class="main">
+    <h1>Catálogo (Sidebar)</h1>
+    <p>Vista tipo Coursera: navegación lateral + contenido principal.</p>
+
+    <div class="toolbar">
+      <label><strong>Categoría:</strong></label>
+      <select id="filtro-categoria">
+        <option value="">Todas</option>
+        <option value="Programación">Programación</option>
+        <option value="Bases de datos">Bases de datos</option>
+        <option value="Desarrollo Web">Desarrollo Web</option>
+        <option value="Ciberseguridad">Ciberseguridad</option>
+        <option value="DevOps">DevOps</option>
+        <option value="Inteligencia Artificial">Inteligencia Artificial</option>
+      </select>
+
+      <label style="margin-left:8px;"><strong>Buscar:</strong></label>
+      <input id="buscador" type="text" placeholder="Buscar por nombre..." style="width:260px;">
+      <button id="btn-buscar">Buscar</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Duración (h)</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-cursos"></tbody>
+    </table>
+
+    <div class="pager">
+      <button id="btn-prev">Anterior</button>
+      <div id="paginacion" class="nums"></div>
+      <button id="btn-next">Siguiente</button>
+      <span id="info-pagina"></span>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API_URL = "http://localhost:3000";
+const estadoCursos = { pageActual: 1, limit: 10, totalPages: 1 };
+
+function getToken(){ return localStorage.getItem("token") || ""; }
+function getRol(){ return localStorage.getItem("rol") || ""; }
+function isLoggedIn(){ return !!getToken(); }
+
+function logout(){
+  localStorage.removeItem("token");
+  localStorage.removeItem("rol");
+  localStorage.removeItem("estudianteId");
+  localStorage.removeItem("pendingCourseId");
+  window.location.href = "login.html";
+}
+
+async function authFetch(url, options = {}) {
+  const token = getToken();
+  const headers = Object.assign({}, options.headers || {});
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const res = await fetch(url, Object.assign({}, options, { headers }));
+  if (res.status === 401) { logout(); throw new Error("Sesión expirada"); }
+  return res;
+}
+
+function aplicarMenuPorRol(){
+  const rol = getRol();
+  const linkMis = document.getElementById("link-mis-cursos");
+  const linkCert = document.getElementById("link-certificados");
+  const linkEst = document.getElementById("link-estudiantes");
+  const linkCon = document.getElementById("link-consultas");
+  const linkLogin = document.getElementById("link-login");
+  const linkReg = document.getElementById("link-register");
+  const linkLogout = document.getElementById("link-logout");
+
+  const estadoLogin = document.getElementById("estado-login");
+  const estadoRol = document.getElementById("estado-rol");
+
+  if (!isLoggedIn()){
+    if (linkMis) linkMis.style.display = "none";
+    if (linkCert) linkCert.style.display = "none";
+    if (linkEst) linkEst.style.display = "none";
+    if (linkCon) linkCon.style.display = "none";
+    if (linkLogout) linkLogout.style.display = "none";
+    if (linkLogin) linkLogin.style.display = "block";
+    if (linkReg) linkReg.style.display = "block";
+    estadoLogin.textContent = "Visitante";
+    estadoRol.textContent = "Sin sesión";
+    return;
+  }
+
+  if (linkLogin) linkLogin.style.display = "none";
+  if (linkReg) linkReg.style.display = "none";
+  if (linkLogout) linkLogout.style.display = "block";
+
+  estadoLogin.textContent = "Autenticado";
+  estadoRol.textContent = `Rol: ${rol || "desconocido"}`;
+
+  if (rol !== "admin"){
+    if (linkEst) linkEst.style.display = "none";
+    if (linkCon) linkCon.style.display = "none";
+  }
+}
+
+function toast(msg, type="success"){
+  const el = document.getElementById("toast");
+  el.className = `toast show ${type}`;
+  el.textContent = msg;
+  setTimeout(()=>{ el.className = "toast"; }, 2200);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  aplicarMenuPorRol();
+
+  document.getElementById("filtro-categoria").addEventListener("change", () => {
+    estadoCursos.pageActual = 1; cargarCursos(1);
+  });
+
+  document.getElementById("btn-buscar").addEventListener("click", () => {
+    estadoCursos.pageActual = 1; cargarCursos(1);
+  });
+
+  document.getElementById("buscador").addEventListener("keydown", (e) => {
+    if (e.key === "Enter"){ estadoCursos.pageActual = 1; cargarCursos(1); }
+  });
+
+  document.getElementById("btn-prev").addEventListener("click", () => {
+    if (estadoCursos.pageActual > 1){ estadoCursos.pageActual--; cargarCursos(estadoCursos.pageActual); }
+  });
+
+  document.getElementById("btn-next").addEventListener("click", () => {
+    if (estadoCursos.pageActual < estadoCursos.totalPages){ estadoCursos.pageActual++; cargarCursos(estadoCursos.pageActual); }
+  });
+
+  cargarCursos(1);
+});
+
+async function cargarCursos(page=1){
+  const categoria = document.getElementById("filtro-categoria").value || "";
+  const q = document.getElementById("buscador").value.trim() || "";
+
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(estadoCursos.limit));
+  if (categoria) params.set("categoria", categoria);
+  if (q) params.set("q", q);
+
+  const respCursos = await fetch(`${API_URL}/api/cursos?${params.toString()}`).then(r=>r.json());
+  const cursos = respCursos.data || [];
+  estadoCursos.pageActual = respCursos.page || page;
+  estadoCursos.totalPages = respCursos.totalPages || 1;
+
+  // inscritos
+  let inscritos = [];
+  if (isLoggedIn() && getRol()==="estudiante"){
+    try{
+      const r = await authFetch(`${API_URL}/api/progreso/me`);
+      const data = await r.json();
+      if (Array.isArray(data)){
+        inscritos = data.map(p => typeof p.cursoId==="string" ? p.cursoId : (p.cursoId?.$oid || String(p.cursoId)));
+      }
+    }catch{ inscritos=[]; }
+  }
+
+  const tabla = document.getElementById("tabla-cursos");
+  tabla.innerHTML = "";
+
+  cursos.forEach(c => {
+    const estaInscrito = inscritos.includes(c._id);
+
+    let accion = "";
+    if (!isLoggedIn()){
+      accion = `<button onclick="inscribirLanding('${c._id}', this)">Inscribirse</button>`;
+    } else if (getRol()!=="estudiante"){
+      accion = `<button disabled>Solo estudiante</button>`;
+    } else if (estaInscrito){
+      accion = `<button disabled>Inscrito ✅</button>  curso.html?cursoId=${c._id}Ver curso</a>`;
+    } else {
+      accion = `<button onclick="inscribirLanding('${c._id}', this)">Inscribirse</button>`;
+    }
+
+    tabla.innerHTML += `
+      <tr>
+        <td>${c.nombre}</td>
+        <td>${c.categoria}</td>
+        <td>${c.duracionHoras}</td>
+        <td>${accion}</td>
+      </tr>
+    `;
+  });
+
+  renderPaginacion();
+}
+
+function renderPaginacion(){
+  document.getElementById("info-pagina").textContent = `Página ${estadoCursos.pageActual} de ${estadoCursos.totalPages}`;
+  document.getElementById("btn-prev").disabled = estadoCursos.pageActual <= 1;
+  document.getElementById("btn-next").disabled = estadoCursos.pageActual >= estadoCursos.totalPages;
+
+  const cont = document.getElementById("paginacion");
+  cont.innerHTML = "";
+
+  const total = estadoCursos.totalPages;
+  const actual = estadoCursos.pageActual;
+  const maxBotones = 7;
+
+  let inicio = Math.max(actual - 3, 1);
+  let fin = Math.min(inicio + maxBotones - 1, total);
+  inicio = Math.max(fin - maxBotones + 1, 1);
+
+  if (inicio > 1){
+    cont.appendChild(btnPag(1, actual===1));
+    if (inicio > 2) cont.appendChild(dots());
+  }
+
+  for (let p=inicio; p<=fin; p++){
+    cont.appendChild(btnPag(p, p===actual));
+  }
+
+  if (fin < total){
+    if (fin < total - 1) cont.appendChild(dots());
+    cont.appendChild(btnPag(total, actual===total));
+  }
+}
+
+function btnPag(p, active){
+  const b = document.createElement("button");
+  b.textContent = String(p);
+  b.disabled = active;
+  b.style.minWidth = "38px";
+  b.onclick = () => { estadoCursos.pageActual = p; cargarCursos(p); };
+  return b;
+}
+function dots(){
+  const s = document.createElement("span");
+  s.textContent = "...";
+  s.style.padding = "0 6px";
+  return s;
+}
+
+async function inscribirLanding(cursoId, btn){
+  if (!isLoggedIn()){
+    localStorage.setItem("pendingCourseId", cursoId);
+    window.location.href = `login.html?redirect=${encodeURIComponent("index-sidebar.html")}`;
+    return;
+  }
+  if (getRol()!=="estudiante"){
+    toast("Solo estudiantes pueden inscribirse.", "error");
+    return;
+  }
+
+  try{
+    btn.disabled = true;
+    btn.textContent = "Inscribiendo...";
+
+    const res = await authFetch(`${API_URL}/api/progreso`, {
+      method:"POST",
+      body: JSON.stringify({ cursoId })
+    });
+    const data = await res.json();
+
+    const msg = (data?.mensaje || "").toLowerCase();
+    if (msg.includes("ya está inscrito") || msg.includes("ya inscrito")){
+      toast("Ya estás inscrito. Ve a Mis Cursos.", "success");
+    } else {
+      toast("Inscripción exitosa ✅", "success");
+    }
+    await cargarCursos(estadoCursos.pageActual);
+  }catch(e){
+    btn.disabled = false;
+    btn.textContent = "Inscribirse";
+    toast("Error al inscribirse: " + e.message, "error");
+  }
+}
+</script>
+
+</body>
+</html>

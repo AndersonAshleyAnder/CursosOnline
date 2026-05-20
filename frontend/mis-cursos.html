@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Cursos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ✅ NAV UNIFICADO -->
+<nav class="nav-container">
+  
+  <div class="nav-left">
+<a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html" id="link-est">Estudiantes</a>
+<a href="consultas.html" id="link-con">Consultas</a>
+<a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+
+</nav>
+
+<hr>
+
+<main>
+  <div class="wrap">
+
+    <h1>Mis Cursos</h1>
+
+    <p>
+      Aquí puedes ver los cursos en los que estás inscrito y tu progreso
+      basado en las lecciones completadas.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>Lecciones completadas</th>
+          <th>Progreso</th>
+          <th>Certificado</th>
+          <th>Curso</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-mis-cursos"></tbody>
+    </table>
+
+  </div>
+</main>
+
+<script src="app.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    cargarMisCursos();
+  });
+</script>
+
+</body>
+</html>

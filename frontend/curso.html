@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Curso</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+ <nav class="nav-container">
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+
+    <!-- ✅ Agrega IDs aquí -->
+    <a href="estudiantes.html" id="link-est">Estudiantes</a>
+    <a href="consultas.html" id="link-con">Consultas</a>
+    <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+</nav>
+
+  <hr>
+
+  <!-- ✅ CONTENEDOR PARA ALINEAR COMO LAS DEMÁS PÁGINAS -->
+  <main class="wrap">
+
+    <h1 id="titulo-curso">Curso</h1>
+
+    <!-- ✅ Lo que aprenderás -->
+    <section class="section-card" style="margin-top:14px;">
+      <div class="section-head">
+        <h2 style="margin:0;">Lo que aprenderás</h2>
+        <small>Objetivos del curso</small>
+      </div>
+
+      <ul id="lista-aprendizajes" style="margin: 10px 0 0; padding-left: 18px; line-height: 1.8;">
+        <li>Cargando objetivos...</li>
+      </ul>
+    </section>
+
+    <!-- ✅ Progreso -->
+    <section class="section-card" style="margin-top:14px;">
+      <div class="section-head">
+        <h2 style="margin:0;">Progreso del curso</h2>
+        <small><span id="texto-progreso">0 % completado</span></small>
+      </div>
+
+      <!-- Mantenemos tu <progress> tal cual para no romper nada -->
+      <progress id="barra-progreso" value="0" max="100" style="width:100%; height:14px;"></progress>
+    </section>
+
+    <!-- ✅ Mensaje completado -->
+    <section id="mensaje-completado"
+      class="section-card"
+      style="display:none; margin-top:14px; border:2px solid #22c55e; background: rgba(34,197,94,.08);">
+      <h3 style="margin-top:0;">🎉 Curso completado</h3>
+      <p>Tu certificado fue generado automáticamente. Puedes verlo en <strong>Certificados</strong>.</p>
+    </section>
+
+    <!-- ✅ Contenido -->
+    <section class="section-card" style="margin-top:14px;">
+      <div class="section-head">
+        <h2 style="margin:0;">Contenido</h2>
+        <small>Lecciones del curso</small>
+      </div>
+
+      <!-- ✅ Tabla con clase propia (no afecta otras tablas) -->
+      <table class="tabla-lecciones">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Lección</th>
+            <th style="text-align:right; width:180px;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-lecciones"></tbody>
+      </table>
+    </section>
+
+    <!-- ✅ Reseña -->
+    <section id="seccion-resena" class="section-card" style="display:none; margin-top:14px;">
+      <div class="section-head">
+        <h2 style="margin:0;">⭐ Deja tu reseña del curso</h2>
+        <small>Tu opinión ayuda a mejorar</small>
+      </div>
+
+      <div id="resena-existente"
+           style="display:none; padding:12px; border:1px solid #263152; border-radius:12px; margin-bottom:12px;">
+        <strong>Tu reseña:</strong>
+        <div id="resena-rating"></div>
+        <div id="resena-comentario" style="margin-top:6px;"></div>
+      </div>
+
+      <div id="form-resena">
+        <label for="rating"><strong>Calificación (1 a 5):</strong></label>
+        <select id="rating">
+          <option value="5">5 - Excelente</option>
+          <option value="4">4 - Muy bueno</option>
+          <option value="3">3 - Bueno</option>
+          <option value="2">2 - Regular</option>
+          <option value="1">1 - Malo</option>
+        </select>
+
+        <br><br>
+
+        <label for="comentario"><strong>Comentario:</strong></label><br>
+        <textarea id="comentario" rows="4" style="width:100%;" placeholder="Escribe tu opinión del curso..."></textarea>
+
+        <br><br>
+
+        <button id="btn-enviar-resena">Enviar reseña</button>
+        <span id="msg-resena" style="margin-left:10px;"></span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JS global -->
+  <script src="app.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const CURSO_ID = params.get("cursoId");
+    const TOTAL_LECCIONES = 4;
+
+    let leccionesCompletadas = [];
+
+    // ✅ Contenido por curso (si no existe, usa default)
+    const CONTENIDO_CURSOS = {
+      "default": ["Lección 1", "Lección 2", "Lección 3", "Lección 4"]
+    };
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (typeof requireLogin === "function") requireLogin();
+      if (typeof aplicarMenuPorRol === "function") aplicarMenuPorRol();
+
+      await cargarProgresoCurso();
+      prepararResena();
+    });
+
+    function normalizarId(id) {
+      if (typeof id === "string") return id;
+      if (id && id.$oid) return id.$oid;
+      return String(id);
+    }
+
+    function temaDesdeNombre(nombre) {
+      const n = (nombre || "").replace(/^Curso de\s+/i, "").trim();
+      return n.replace(/\s+(desde cero|avanzado|intensivo|para principiantes|profesional|práctico)$/i, "").trim();
+    }
+
+    function bulletsPorCategoria(categoria, tema) {
+      const t = tema || "este curso";
+      const cat = (categoria || "").toLowerCase();
+
+      if (cat.includes("program")) {
+        return [
+          `Dominarás los fundamentos de ${t} y su uso en casos reales.`,
+          `Construirás lógica y componentes prácticos aplicando buenas prácticas.`,
+          `Resolverás ejercicios guiados para reforzar conceptos clave de ${t}.`
+        ];
+      }
+
+      if (cat.includes("bases") || cat.includes("datos")) {
+        return [
+          `Modelarás datos y diseñarás estructuras eficientes en ${t}.`,
+          `Harás consultas (CRUD) y operaciones comunes aplicadas a proyectos.`,
+          `Aplicarás buenas prácticas de rendimiento y organización en ${t}.`
+        ];
+      }
+
+      if (cat.includes("web")) {
+        return [
+          `Crearás interfaces modernas con ${t} y enfoque responsive.`,
+          `Aprenderás estructura, estilos y componentes reutilizables.`,
+          `Aplicarás patrones UI para construir páginas profesionales.`
+        ];
+      }
+
+      if (cat.includes("ciber")) {
+        return [
+          `Comprenderás conceptos clave de ${t} y prácticas seguras.`,
+          `Analizarás riesgos comunes y cómo mitigarlos en escenarios reales.`,
+          `Aplicarás metodologías y checklist básicos para fortalecer seguridad.`
+        ];
+      }
+
+      if (cat.includes("devops")) {
+        return [
+          `Implementarás flujos prácticos de ${t} para automatización y despliegue.`,
+          `Entenderás el ciclo CI/CD y operación confiable en entornos modernos.`,
+          `Aplicarás buenas prácticas para mantener sistemas estables y escalables.`
+        ];
+      }
+
+      if (cat.includes("inteligencia") || cat.includes("ia")) {
+        return [
+          `Comprenderás fundamentos de ${t} y cómo aplicarlos en proyectos.`,
+          `Aprenderás el pipeline: datos → entrenamiento → evaluación básica.`,
+          `Implementarás ejemplos guiados para experimentar con modelos de IA.`
+        ];
+      }
+
+      return [
+        `Aprenderás conceptos fundamentales y aplicaciones prácticas del curso.`,
+        `Desarrollarás habilidades mediante ejercicios guiados y ejemplos.`,
+        `Aplicarás buenas prácticas para crear resultados profesionales.`
+      ];
+    }
+
+    function renderAprendizajes(categoria, nombreCurso) {
+      const tema = temaDesdeNombre(nombreCurso);
+      const bullets = bulletsPorCategoria(categoria, tema);
+      const ul = document.getElementById("lista-aprendizajes");
+      ul.innerHTML = bullets.map(b => `<li>${b}</li>`).join("");
+    }
+
+    async function cargarProgresoCurso() {
+      try {
+        const res = await authFetch(`${API_URL}/api/progreso/me`);
+        const data = await res.json();
+
+        const progreso = data.find(p => normalizarId(p.cursoId) === CURSO_ID);
+        if (!progreso) return;
+
+        const nombreCurso = progreso.curso?.[0]?.nombre || "Curso";
+        const categoria = progreso.curso?.[0]?.categoria || "";
+
+        document.getElementById("titulo-curso").innerText = nombreCurso;
+
+        // ✅ Render “Lo que aprenderás”
+        renderAprendizajes(categoria, nombreCurso);
+
+        leccionesCompletadas = (progreso.leccionesCompletadas || []).map(l => l.leccionId);
+
+        const completadas = leccionesCompletadas.length;
+        const porcentaje = Math.round((completadas / TOTAL_LECCIONES) * 100);
+
+        document.getElementById("barra-progreso").value = porcentaje;
+        document.getElementById("texto-progreso").innerText = `${porcentaje} % completado`;
+
+        renderLecciones();
+
+        if (porcentaje === 100) {
+          document.getElementById("mensaje-completado").style.display = "block";
+          document.getElementById("seccion-resena").style.display = "block";
+          await cargarResenaExistente();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderLecciones() {
+      const tabla = document.getElementById("tabla-lecciones");
+      tabla.innerHTML = "";
+
+      const lecciones = CONTENIDO_CURSOS[CURSO_ID] || CONTENIDO_CURSOS["default"];
+
+      lecciones.forEach((nombre, index) => {
+        const id = `leccion-${index + 1}`;
+
+        const tr = document.createElement("tr");
+
+        const tdNombre = document.createElement("td");
+        tdNombre.textContent = nombre;
+
+        const tdAccion = document.createElement("td");
+        tdAccion.style.textAlign = "right";
+
+        const btn = document.createElement("button");
+
+        if (leccionesCompletadas.includes(id)) {
+          btn.textContent = "Completada ✅";
+          btn.disabled = true;
+        } else {
+          btn.textContent = "Completar";
+          btn.onclick = async () => {
+            await completarLeccion(CURSO_ID, id); // ✅ token (desde app.js)
+            await cargarProgresoCurso();
+          };
+        }
+
+        tdAccion.appendChild(btn);
+        tr.appendChild(tdNombre);
+        tr.appendChild(tdAccion);
+        tabla.appendChild(tr);
+      });
+    }
+
+    function prepararResena() {
+      const btn = document.getElementById("btn-enviar-resena");
+      if (!btn) return;
+
+      btn.addEventListener("click", async () => {
+        const rating = document.getElementById("rating").value;
+        const comentario = document.getElementById("comentario").value;
+
+        document.getElementById("msg-resena").innerText = "Enviando...";
+
+        try {
+          const resp = await enviarResena(CURSO_ID, rating, comentario); // ✅ token (app.js)
+          if (resp && resp.error) throw new Error(resp.error);
+
+          document.getElementById("msg-resena").innerText = "✅ Reseña guardada";
+          await cargarResenaExistente();
+        } catch (e) {
+          document.getElementById("msg-resena").innerText = `❌ ${e.message}`;
+        }
+      });
+    }
+
+    async function cargarResenaExistente() {
+      try {
+        const resena = await obtenerResena(CURSO_ID); // ✅ token (app.js)
+        if (!resena) return;
+
+        document.getElementById("resena-existente").style.display = "block";
+        document.getElementById("resena-rating").innerText = `Calificación: ${resena.rating} / 5`;
+        document.getElementById("resena-comentario").innerText = resena.comentario;
+
+        document.getElementById("form-resena").style.display = "none";
+      } catch (e) {
+        // silencioso
+      }
+    }
+  </script>
+
+</body>
+</html>

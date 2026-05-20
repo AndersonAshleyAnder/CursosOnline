@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoría Administrativa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html" id="link-est">Estudiantes</a>
+    <a href="consultas.html" id="link-con">Consultas</a>
+	<a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+</nav>
+
+
+<main>
+
+  <h1>Auditoría Administrativa</h1>
+  <p>Registro completo de acciones realizadas por el administrador.</p>
+
+  <!-- FILTRO -->
+  <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
+    <input id="buscar" placeholder="Filtrar por acción, email o ID" style="flex:1;">
+    <button onclick="cargarLogs()">Buscar</button>
+  </div>
+
+  <!-- TABLA -->
+  <table>
+    <thead>
+      <tr>
+        <th>Acción</th>
+        <th>Usuario afectado</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-logs"></tbody>
+  </table>
+
+  <!-- PAGINACIÓN -->
+  <div style="display:flex; gap:8px; margin-top:16px;">
+    <button onclick="prev()">Anterior</button>
+    <span id="pagina"></span>
+    <button onclick="next()">Siguiente</button>
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+let logs = [];
+let usuariosMap = {};
+let page = 1;
+const limit = 10;
+
+async function cargarLogs(){
+  try{
+    const q = buscar.value?.toLowerCase() || "";
+
+    const logsResp = await authFetch("/api/admin/logs?limit=200");
+    logs = await logsResp.json();
+
+    const usersResp = await authFetch("/api/admin/usuarios");
+    const users = await usersResp.json();
+    usuariosMap = {};
+    users.forEach(u => {
+      usuariosMap[u._id] = u.email;
+    });
+
+    if(q){
+      logs = logs.filter(l =>
+        l.accion.toLowerCase().includes(q) ||
+        (l.usuarioId || "").toLowerCase().includes(q) ||
+        (usuariosMap[l.usuarioId] || "").toLowerCase().includes(q)
+      );
+    }
+
+    page = 1;
+    render();
+  }catch(e){
+    alert(e.message);
+  }
+}
+
+function render(){
+  const tbody = document.getElementById("tabla-logs");
+  tbody.innerHTML = "";
+
+  const ini = (page - 1) * limit;
+  const fin = ini + limit;
+
+  logs.slice(ini, fin).forEach(l => {
+    const email = usuariosMap[l.usuarioId] || "—";
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${l.accion}</td>
+      <td>
+        <strong>${email}</strong><br>
+        <small style="color:#94a3b8;">${l.usuarioId || ""}</small>
+      </td>
+      <td>${new Date(l.fecha).toLocaleString()}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  pagina.textContent = `Página ${page} de ${Math.ceil(logs.length / limit)}`;
+}
+
+function next(){
+  if(page * limit < logs.length){
+    page++;
+    render();
+  }
+}
+
+function prev(){
+  if(page > 1){
+    page--;
+    render();
+  }
+}
+
+cargarLogs();
+</script>
+
+</body>
+</html>

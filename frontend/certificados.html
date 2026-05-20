@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Certificados</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav-container">
+  
+  <div class="nav-left">
+<a href="index.html">Inicio</a>
+    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+    <a href="certificados.html" id="link-cert">Certificados</a>
+    <a href="estudiantes.html" id="link-est">Estudiantes</a>
+<a href="consultas.html" id="link-con">Consultas</a>
+<a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="#" id="link-logout">Cerrar sesión</a>
+  </div>
+
+</nav>
+
+
+<hr>
+
+<main>
+  <div class="wrap">
+
+    <h1>Mis Certificados</h1>
+
+    <p>En esta sección solo verás los certificados del usuario autenticado.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Estudiante</th>
+          <th>Curso</th>
+          <th>Código</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-certificados">
+        <tr><td colspan="4">Cargando...</td></tr>
+      </tbody>
+    </table>
+
+  </div>
+</main>
+
+
+<script src="app.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  if (typeof requireLogin === "function") requireLogin();
+  if (typeof aplicarMenuPorRol === "function") aplicarMenuPorRol();
+
+  await cargarCertificadosDelLogueado();
+});
+
+async function cargarCertificadosDelLogueado() {
+  const tabla = document.getElementById("tabla-certificados");
+  tabla.innerHTML = `<tr><td colspan="4">Cargando...</td></tr>`;
+
+  try {
+    const res = await authFetch(`${API_URL}/api/certificados/me`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      tabla.innerHTML = `<tr><td colspan="4">No tienes certificados aún.</td></tr>`;
+      return;
+    }
+
+    tabla.innerHTML = "";
+
+    data.forEach(c => {
+      const estudiante =
+  c.nombreEstudiante ||
+  c.estudiante?.[0]?.nombre ||
+  "—";
+
+const curso =
+  c.nombreCurso ||
+  c.curso?.[0]?.nombre ||
+  "—";
+
+const codigo =
+  c.codigo ||
+  c.codigoCertificado ||
+  "—";
+      const fecha = c.fechaEmision
+        ? new Date(c.fechaEmision).toLocaleDateString()
+        : "—";
+
+      tabla.innerHTML += `
+        <tr>
+          <td>${estudiante}</td>
+          <td>${curso}</td>
+          <td>${codigo}</td>
+          <td>${fecha}</td>
+        </tr>
+      `;
+    });
+
+  } catch (e) {
+    tabla.innerHTML = `<tr><td colspan="4">No se pudieron cargar los certificados: ${e.message}</td></tr>`;
+  }
+}
+</script>
+
+
+<script>
+async function generarCertificado(cursoId) {
+  const res = await authFetch("/api/certificados/generar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cursoId })
+  });
+
+  if (!res.ok) {
+    alert("No se pudo generar el certificado");
+    return;
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "certificado.pdf";
+  a.click();
+}
+</script>
+
+</body>
+</html>
