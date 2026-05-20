@@ -1,5 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+
+app.use(cors({
+  origin: "*"
+}));
+
 const path = require("path");
 const connectDB = require("./config");
 
