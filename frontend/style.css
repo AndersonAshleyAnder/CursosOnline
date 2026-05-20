@@ -777,3 +777,57 @@ button {
     width: 100%;
   }
 }
+/* ===========================
+   LOGIN RESPONSIVE ✅
+=========================== */
+
+.auth-page {
+  padding: 16px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* Inputs grandes para móvil */
+.field input {
+  padding: 12px;
+  font-size: 16px;
+}
+
+/* Botón ancho completo */
+.actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.actions button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+}
+
+/* Ajustes en pantallas pequeñas */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .auth-card h1 {
+    font-size: 24px;
+    text-align: center;
+  }
+
+  .auth-card p {
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .field label {
+    font-size: 14px;
+  }
+}
