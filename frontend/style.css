@@ -819,3 +819,170 @@ media (max-width: 480px){
     background: rgba(17,26,51,.6);
   }
 }
+/* NAV MEJORADO */
+.nav-container {
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+/* botón hamburguesa mejor alineado */
+.menu-toggle {
+  display: none;
+  font-size: 20px;
+  background: rgba(17,26,51,.6);
+  border: 1px solid rgba(38,49,82,.7);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+/* MOBILE */
+@media (max-width: 768px){
+
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+  }
+}
+/* =========================================================
+   OVERRIDES LIMPIOS (PEGAR AL FINAL) ✅
+   - Arregla sintaxis, duplicados y alineación
+   - Nav hamburguesa funciona con .nav-menu (#menu)
+   - Login iPhone: 100svh + fallback
+========================================================= */
+
+/* ---------- NAV: alineación pro ---------- */
+.nav-container{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Para que el menú desplegable se ancle al nav */
+.nav-container{ position: sticky; }
+.nav-container{ isolation: isolate; } /* evita overlays raros */
+
+/* Botón hamburguesa (solo 1 definición) */
+.menu-toggle{
+  display: none;
+  font-size: 20px;
+  line-height: 1;
+  background: rgba(17,26,51,.6);
+  border: 1px solid rgba(38,49,82,.7);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Menú desktop */
+.nav-menu{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- MOBILE NAV ---------- */
+@media (max-width: 768px){
+
+  /* solo Inicio visible a la izquierda; menú sale desde botón */
+  .nav-left{ width: auto; }
+
+  .menu-toggle{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  /* El menú completo cae debajo del nav */
+  .nav-menu{
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+
+    background: rgba(11,16,32,.95);
+    border: 1px solid rgba(38,49,82,.7);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .nav-menu.show{
+    display: flex;
+  }
+
+  .nav-menu a{
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(17,26,51,.6);
+  }
+}
+
+/* ---------- TOOLBAR MOBILE (más alineado) ---------- */
+@media (max-width: 600px){
+  .toolbar{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar select,
+  .toolbar input{
+    width: 100%;
+  }
+
+  /* solo el botón dentro del toolbar a full */
+  .toolbar button{
+    width: 100%;
+  }
+}
+
+/* ---------- GRID (seguro, no rompe) ---------- */
+.grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+/* ---------- LOGIN (FIX iPhone real) ---------- */
+.auth-page{
+  min-height: 100svh; /* ✅ iPhone Safari correcto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* fallback real para navegadores que no soportan svh */
+@supports not (height: 100svh){
+  .auth-page{ min-height: 100vh; }
+}
+
+@media (max-width: 480px){
+  .auth-page{
+    min-height: 100svh;
+    align-items: flex-start;
+    padding-top: 90px;
+  }
+}
+
+/* ---------- Cards: margen suave en móvil ---------- */
+@media (max-width: 768px){
+  .card{ margin: 4px 0; }
+}
