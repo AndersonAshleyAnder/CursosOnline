@@ -8,19 +8,34 @@
 <body>
 
  <nav class="nav-container">
+
+  <!-- IZQUIERDA (SIEMPRE visible) -->
   <div class="nav-left">
     <a href="index.html">Inicio</a>
-    <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
-    <a href="certificados.html" id="link-cert">Certificados</a>
-
-    <!-- ✅ Agrega IDs aquí -->
-    <a href="estudiantes.html" id="link-est">Estudiantes</a>
-    <a href="consultas.html" id="link-con">Consultas</a>
-    <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
   </div>
 
-  <div class="nav-right">
-    <a href="#" id="link-logout">Cerrar sesión</a>
+  <!-- BOTÓN HAMBURGUESA -->
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+  <!-- MENÚ (todo aquí adentro) -->
+  <div class="nav-menu" id="menu">
+
+    <!-- Links de navegación -->
+    <div class="nav-links">
+      <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
+      <a href="certificados.html" id="link-cert">Certificados</a>
+      <a href="estudiantes.html" id="link-est">Estudiantes</a>
+      <a href="consultas.html" id="link-con">Consultas</a>
+      <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
+    </div>
+
+    <!-- Auth -->
+    <div class="nav-auth">
+      <a href="login.html" id="link-login">Iniciar sesión</a>
+      <a href="register.html" id="link-register">Registrarse</a>
+      <a href="#" id="link-logout">Cerrar sesión</a>
+    </div>
+
   </div>
 </nav>
 
