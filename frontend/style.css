@@ -1,6 +1,6 @@
 /* ===========================
    PRO THEME (Udemy/Coursera-like)
-   Dark modern UI - CLEAN VERSION
+   Dark modern UI - CLEAN (NO DUPLICATES)
    =========================== */
 
 :root{
@@ -20,15 +20,17 @@
   --shadow: 0 10px 35px rgba(0,0,0,.35);
   --radius: 14px;
 
-  --max: 1200px;   /* ✅ ancho unificado */
-  --padx: 24px;    /* ✅ padding lateral unificado */
+  --max: 1200px;
+  --padx: 24px;
   --pady: 40px;
 
   --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue",
           Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
 
-/* Reset */
+/* ===========================
+   Reset / Base
+   =========================== */
 *{ box-sizing: border-box; }
 html,body{ height:100%; }
 html{ overflow-y: scroll; }
@@ -38,25 +40,10 @@ body{
   font-family: var(--sans);
   color: var(--text);
   overflow-x: hidden;
-
   background:
     radial-gradient(1200px 600px at 20% 0%, rgba(124,58,237,.25), transparent 60%),
     radial-gradient(1000px 600px at 80% 10%, rgba(96,165,250,.15), transparent 60%),
     linear-gradient(180deg, var(--bg), var(--bg2));
-}
-
-/* ===========================
-   Layout
-   =========================== */
-
-.wrap{
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: var(--pady) var(--padx);
-}
-
-main{
-  display:block;
 }
 
 hr{
@@ -67,9 +54,26 @@ hr{
 }
 
 /* ===========================
+   Layout Containers
+   =========================== */
+.wrap{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--pady) var(--padx);
+}
+
+/* Compatibilidad: algunas páginas usan .layout */
+.layout{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--pady) var(--padx);
+}
+
+main{ display:block; }
+
+/* ===========================
    NAV
    =========================== */
-
 nav,
 .nav-container{
   position: sticky;
@@ -122,28 +126,24 @@ nav a:hover,
 /* ===========================
    Typography
    =========================== */
-
 h1{
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: clamp(24px, 5vw, 44px);
   margin: 0 0 12px 0;
 }
-
 h2{
+  font-size: clamp(18px, 3.2vw, 28px);
   margin: 18px 0 10px;
 }
-
 p{
   margin: 0 0 14px 0;
   color: var(--muted2);
 }
-
 a{ color: var(--link); }
 
 /* ===========================
    Forms
    =========================== */
-
-input, select{
+input, select, textarea{
   background: rgba(17,26,51,.55);
   color: var(--text);
   border: 1px solid rgba(38,49,82,.75);
@@ -151,10 +151,8 @@ input, select{
   padding: 10px 12px;
   outline: none;
 }
-
-input::placeholder{ color: rgba(148,163,184,.8); }
-
-input:focus, select:focus{
+input::placeholder, textarea::placeholder{ color: rgba(148,163,184,.8); }
+input:focus, select:focus, textarea:focus{
   border-color: rgba(124,58,237,.75);
   box-shadow: 0 0 0 3px rgba(124,58,237,.15);
 }
@@ -162,7 +160,6 @@ input:focus, select:focus{
 /* ===========================
    Buttons
    =========================== */
-
 button{
   background: linear-gradient(180deg, rgba(124,58,237,.95), rgba(124,58,237,.85));
   color:white;
@@ -174,66 +171,55 @@ button{
   box-shadow: 0 10px 22px rgba(124,58,237,.18);
   transition: transform .15s ease, box-shadow .25s ease, filter .15s ease;
 }
-
 button:hover{
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(124,58,237,.35);
   filter: brightness(1.05);
 }
-
 button:disabled{
   opacity: .55;
   cursor: not-allowed;
   transform: none;
 }
 
-/* ===========================
-   Table (BASE) - NO rompe otras tablas
-   =========================== */
+/* Links pequeños (los usas en cards/acciones) */
+.mini-link{
+  color: var(--link);
+  font-weight: 800;
+  text-decoration: none;
+}
+.mini-link:hover{ text-decoration: underline; }
 
+/* ===========================
+   Tables (BASE)
+   =========================== */
 table{
   width:100%;
   border-collapse:collapse;
   margin-top:12px;
 }
-
 thead{
   background: rgba(15,25,55,0.92);
 }
-
 thead th{
   padding:14px;
   color:#9fb3ff;
   text-align:left;
   font-weight: 700;
 }
+tbody td{ padding:14px; }
+tbody tr{ transition: background .2s ease; }
+tbody tr:hover{ background: rgba(120,130,255,0.12); }
 
-tbody td{
-  padding:14px;
-}
-
-tbody tr{
-  transition: background .2s ease;
-}
-
-tbody tr:hover{
-  background: rgba(120,130,255,0.12);
-}
-
-/* ===========================
-   Animación filas (opcional, segura)
-   =========================== */
-
+/* Animación filas (segura) */
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 tbody tr{
   opacity: 0;
   animation: fadeSlideUp 0.45s ease forwards;
 }
-
 tbody tr:nth-child(1) { animation-delay:0.05s; }
 tbody tr:nth-child(2) { animation-delay:0.1s; }
 tbody tr:nth-child(3) { animation-delay:0.15s; }
@@ -242,16 +228,12 @@ tbody tr:nth-child(5) { animation-delay:0.25s; }
 tbody tr:nth-child(6) { animation-delay:0.3s; }
 tbody tr:nth-child(7) { animation-delay:0.35s; }
 
-/* ===========================
-   Table Wrap (scroll interno opcional)
-   =========================== */
-
+/* Wrap de tabla: scroll vertical + horizontal si hace falta */
 .table-wrap{
   max-height: 350px;
-  overflow-y: auto;
+  overflow: auto; /* ✅ y + x */
   border-radius: 10px;
 }
-
 .table-wrap thead{
   position: sticky;
   top: 0;
@@ -259,62 +241,63 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
 }
 
 /* ===========================
-   TABLA: Mis Cursos (6 columnas)
-   - NO usa table-layout fixed para no romper textos
+   Tablas específicas
    =========================== */
 
+/* Mis Cursos (6 cols) */
 .tabla-cursos td:nth-child(2),
 .tabla-cursos td:nth-child(3),
 .tabla-cursos td:nth-child(4),
 .tabla-cursos td:nth-child(5){
   text-align:center;
 }
+.tabla-cursos td:last-child{ text-align:right; }
 
-.tabla-cursos td:last-child{
-  text-align:right;
-}
-
-/* ===========================
-   TABLA: Certificados (4 columnas)
-   - ARREGLA el "código vertical"
-   =========================== */
-
+/* Certificados (4 cols) - evita "código vertical" */
 .tabla-certificados{
-  table-layout: fixed; /* ✅ control de columnas */
+  table-layout: fixed;
 }
-
 .tabla-certificados th,
 .tabla-certificados td{
-  word-break: break-word;
   white-space: normal;
+  word-break: break-word;
 }
-
-/* Column widths */
 .tabla-certificados th:nth-child(1),
 .tabla-certificados td:nth-child(1){ width: 30%; }
-
 .tabla-certificados th:nth-child(2),
 .tabla-certificados td:nth-child(2){ width: 25%; }
-
 .tabla-certificados th:nth-child(3),
 .tabla-certificados td:nth-child(3){
   width: 30%;
-  word-break: break-all;          /* ✅ evita que salga en vertical */
+  word-break: break-all;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   letter-spacing: .4px;
   text-align: center;
 }
-
 .tabla-certificados th:nth-child(4),
 .tabla-certificados td:nth-child(4){
   width: 15%;
   text-align: right;
 }
 
+/* Estudiantes (3 cols) - acciones a la derecha */
+.tabla-estudiantes th:last-child,
+.tabla-estudiantes td:last-child{
+  text-align:right;
+  width: 220px;
+}
+.tabla-estudiantes td:last-child button{ margin-left: 8px; }
+
+/* Lecciones (curso.html) */
+.tabla-lecciones th:last-child,
+.tabla-lecciones td:last-child{
+  text-align:right;
+  width: 180px;
+}
+
 /* ===========================
    Toast
    =========================== */
-
 .toast{
   position: fixed;
   bottom: 20px;
@@ -329,19 +312,16 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   box-shadow: var(--shadow);
   z-index: 9999;
 }
-
 .toast.show{
   opacity: 1;
   transform: translateY(0);
 }
-
 .toast.success{ background: #28a745; }
 .toast.error{ background: #dc3545; }
 
 /* ===========================
    Section Cards
    =========================== */
-
 .section-card{
   background: linear-gradient(180deg, rgba(17,26,51,.75), rgba(15,24,51,.9));
   border: 1px solid rgba(38,49,82,.7);
@@ -350,20 +330,17 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   margin-bottom: 24px;
   box-shadow: var(--shadow);
 }
-
 .section-card:hover{
   border-color: rgba(124,58,237,.8);
   box-shadow: 0 10px 40px rgba(124,58,237,.25);
 }
-
 .section-head{ margin-bottom: 12px; }
 .section-head h2{ margin: 0; font-size: 20px; }
 .section-head small{ color: var(--muted2); }
 
 /* ===========================
-   Modal
+   Modal (Preview de cursos)
    =========================== */
-
 .modal-overlay{
   position: fixed;
   inset: 0;
@@ -373,7 +350,6 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   justify-content: center;
   z-index: 9999;
 }
-
 .modal-overlay.show{ display:flex; }
 
 .modal{
@@ -387,12 +363,10 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   transition: all 0.25s ease;
   box-shadow: var(--shadow);
 }
-
 .modal-overlay.show .modal{
   transform: scale(1);
   opacity: 1;
 }
-
 .modal-hero{
   height: 180px;
   background-size: cover;
@@ -400,14 +374,12 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   position: relative;
   overflow: hidden;
 }
-
 .modal-hero::after{
   content:"";
   position:absolute;
   inset:0;
   background: linear-gradient(to top, rgba(0,0,0,.6), transparent);
 }
-
 .hero-chip{
   position:absolute;
   top: 16px;
@@ -424,20 +396,17 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   color: #fff;
   z-index: 3;
 }
-
 .modal-content{
   padding: 20px;
   max-height: 60vh;
   overflow-y: auto;
 }
-
 .modal-content hr{
   border: none;
   height: 1px;
   background: rgba(255,255,255,.1);
   margin: 16px 0;
 }
-
 #modal-actions button{
   width: 100%;
   font-size: 16px;
@@ -446,9 +415,8 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
 }
 
 /* ===========================
-   Pagination
+   Paginación
    =========================== */
-
 .paginacion-wrapper{
   display: flex;
   justify-content: center;
@@ -457,22 +425,16 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   margin-top: 20px;
   flex-wrap: wrap;
 }
-
 #paginacion{
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
 }
-
-#paginacion button{
-  min-width: 36px;
-}
-
+#paginacion button{ min-width: 36px; }
 #paginacion button.activo{
   background: var(--primary);
   color: white;
 }
-
 #paginacion button:disabled{
   opacity: 0.5;
   cursor: default;
@@ -481,16 +443,14 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
 /* ===========================
    Loader (simple)
    =========================== */
-
 #loader{
   position: fixed;
-  top: 120px; /* debajo del nav */
+  top: 120px;
   left: 50%;
   transform: translateX(-50%);
   display: none;
   z-index: 9998;
 }
-
 .loader-box{
   background: rgba(17,26,51,.95);
   padding: 16px 24px;
@@ -499,335 +459,206 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
 }
 
 /* ===========================
-   Responsive tweaks
+   Catálogo: Grid + Cards + Toolbar
    =========================== */
-
-@media (max-width: 720px){
-  .wrap{ padding: 26px 16px; }
-  thead th, tbody td{ padding: 12px; }
-  nav, .nav-container{ padding: 10px 16px; }
+.grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
 }
-/* ✅ Compatibilidad: si antes usabas .layout en admin */
-.layout{
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: var(--pady) var(--padx);
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  margin: 14px 0 10px;
+  padding: 12px;
+  border: 1px solid rgba(38,49,82,.75);
+  border-radius: 14px;
+  background: rgba(17,26,51,.45);
 }
-/* ===========================
-   TABLAS ESPECÍFICAS (NO global)
-   =========================== */
-
-/* ✅ Mis Cursos (6 cols) */
-.tabla-cursos td:nth-child(2),
-.tabla-cursos td:nth-child(3),
-.tabla-cursos td:nth-child(4),
-.tabla-cursos td:nth-child(5){
-  text-align: center;
-}
-
-.tabla-cursos td:last-child{
-  text-align: right;
+.toolbar input,
+.toolbar select{
+  flex: 1;
+  min-width: 150px;
 }
 
-
-/* ✅ Certificados (4 cols) - evita "código vertical" */
-.tabla-certificados{
-  table-layout: fixed;
-}
-
-.tabla-certificados th,
-.tabla-certificados td{
-  white-space: normal;
-  word-break: break-word;
-}
-
-.tabla-certificados th:nth-child(1),
-.tabla-certificados td:nth-child(1){ width: 30%; }
-
-.tabla-certificados th:nth-child(2),
-.tabla-certificados td:nth-child(2){ width: 25%; }
-
-.tabla-certificados th:nth-child(3),
-.tabla-certificados td:nth-child(3){
-  width: 30%;
-  word-break: break-all;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  letter-spacing: .4px;
-  text-align: center;
-}
-
-.tabla-certificados th:nth-child(4),
-.tabla-certificados td:nth-child(4){
-  width: 15%;
-  text-align: right;
-}
-
-
-/* ✅ Estudiantes (3 cols) - mantiene "Acciones" a la derecha */
-.tabla-estudiantes th:last-child,
-.tabla-estudiantes td:last-child{
-  text-align: right;
-  width: 220px; /* espacio fijo para botones */
-}
-
-.tabla-estudiantes td:last-child button{
-  margin-left: 8px; /* separa iconos */
-}
-/* ===========================
-   Hover tipo "Consultas" para las tarjetas de cursos (Index)
-   =========================== */
-
+/* Card + hover tipo “Consultas” (UNA SOLA VEZ) */
 .card{
-  position: relative;            /* necesario para el overlay */
+  position: relative;
   border: 1px solid rgba(38,49,82,.75);
   border-radius: 16px;
-  overflow: hidden;              /* para que el overlay respete el borde */
+  overflow:hidden;
   background: rgba(17,26,51,.45);
-  transition: transform .2s ease, box-shadow .25s ease, border-color .2s ease, background .2s ease;
+  box-shadow: 0 10px 35px rgba(0,0,0,.25);
+  transition: transform .2s ease, background .2s ease, box-shadow .2s ease, border-color .2s ease;
+  display:flex;
+  flex-direction:column;
+  min-height: 220px;
+  cursor: pointer;
 }
-
-/* Overlay que sombrea TODA la tarjeta */
 .card::before{
   content:"";
   position:absolute;
   inset: 0;
   border-radius: inherit;
-  background: rgba(120,130,255,0.12);  /* similar al hover de filas */
-  opacity: 0;
-  transition: opacity .2s ease;
-  pointer-events: none;
-}
-
-/* Glow de contorno */
-.card::after{
-  content:"";
-  position:absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: 0 0 0 1px rgba(124,58,237,.0);
-  opacity: 0;
-  transition: opacity .2s ease;
-  pointer-events: none;
-}
-
-.card:hover::before{
-  opacity: 1; /* sombreado completo */
-}
-
-.card:hover::after{
-  opacity: 1;
-  box-shadow: 0 0 0 1px rgba(124,58,237,.55),
-              0 18px 45px rgba(0,0,0,.45); /* glow + profundidad */
-}
-
-.card:hover{
-  border-color: rgba(124,58,237,.7);
-  transform: translateY(-4px);
-  background: rgba(17,26,51,.65);
-}
-
-/* Accesibilidad: mismo efecto cuando navegas con TAB */
-.card:focus-within::before{ opacity: 1; }
-.card:focus-within::after{
-  opacity: 1;
-  box-shadow: 0 0 0 2px rgba(124,58,237,.65),
-              0 18px 45px rgba(0,0,0,.45);
-}
-/* ===== Hover tipo "Consultas" para cards del Index (pegar AL FINAL del <style>) ===== */
-
-.card{
-  position: relative; /* necesario para el overlay */
-}
-
-/* Sombreado que cubre TODA la tarjeta */
-.card::before{
-  content:"";
-  position:absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: rgba(120,130,255,0.22); /* más fuerte para que se note */
+  background: rgba(120,130,255,0.18);
   opacity: 0;
   transition: opacity .18s ease;
   pointer-events: none;
 }
-
-/* Glow del contorno */
 .card::after{
   content:"";
   position:absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 0 0 0 rgba(124,58,237,0);
   opacity: 0;
   transition: opacity .18s ease, box-shadow .18s ease;
   pointer-events: none;
 }
-
-.card:hover::before{
-  opacity: 1;
-}
-
+.card:hover::before{ opacity: 1; }
 .card:hover::after{
   opacity: 1;
   box-shadow:
     0 0 0 1px rgba(124,58,237,.65),
     0 18px 55px rgba(0,0,0,.55);
 }
-
-/* Refuerza el borde y mantiene tu animación */
 .card:hover{
+  transform: translateY(-4px) scale(1.02);
+  background: rgba(17,26,51,.65);
   border-color: rgba(124,58,237,.75);
+  box-shadow: 0 20px 45px rgba(0,0,0,.45);
 }
-body {
-  margin: 0;
-  padding: 0;
-  font-size: 16px;
-}
-
-.wrap {
-  width: 100%;
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-}
-.nav-container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
+.card:focus-within::before{ opacity: 1; }
+.card:focus-within::after{
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(124,58,237,.65),
+              0 18px 45px rgba(0,0,0,.45);
 }
 
-/* MENÚ EN COLUMNA EN MÓVIL */
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .nav-left, .nav-right {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 14px;
-}
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.toolbar input,
-.toolbar select {
-  flex: 1;
-  min-width: 150px;
-}
-
-/* botón ocupa todo en móvil */
-@media (max-width: 600px) {
-  .toolbar button {
-    width: 100%;
-  }
-}
-.card {
-  width: 100%;
-}
-
-.thumb {
+.thumb{
   height: 120px;
+  background:
+    radial-gradient(400px 120px at 20% 0%, rgba(124,58,237,.35), transparent 60%),
+    radial-gradient(400px 120px at 80% 0%, rgba(96,165,250,.25), transparent 60%),
+    rgba(15,24,51,.85);
+  border-bottom: 1px solid rgba(38,49,82,.75);
+  background-size: cover;
+  background-position: center;
+}
+.content{
+  padding: 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  flex:1;
+}
+.title{
+  font-size: 16px;
+  font-weight: 900;
+}
+.meta{
+  display:flex;
+  gap:10px;
+  color: rgba(148,163,184,.95);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.desc{
+  color: rgba(148,163,184,.9);
+  font-size: 13px;
+}
+.actions{
+  padding: 10px;
+  display:flex;
+  justify-content:space-between;
+  border-top: 1px solid rgba(38,49,82,.65);
+  gap: 10px;
 }
 
-@media (max-width: 500px) {
-  .thumb {
-    height: 100px;
-  }
-}
-.table-wrap {
-  overflow-x: auto;
-}
-.modal {
-  width: 95%;
-  max-width: 900px;
-}
-
-@media (max-width: 600px) {
-  .modal {
-    width: 100%;
-    border-radius: 0;
-  }
-}
-h1 {
-  font-size: clamp(24px, 5vw, 40px);
-}
-
-h2 {
-  font-size: clamp(18px, 3vw, 28px);
-}
-button {
-  padding: 10px 16px;
-  font-size: 14px;
-}
-
-@media (max-width: 600px) {
-  button {
-    width: 100%;
-  }
-}
 /* ===========================
-   LOGIN RESPONSIVE ✅
-=========================== */
-
-.auth-page {
+   LOGIN (Responsive real)
+   =========================== */
+.auth-page{
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   padding: 16px;
 }
-
-.auth-card {
+.auth-card{
   width: 100%;
-  max-width: 420px;
-  margin: auto;
+  max-width: 400px;
+  background: rgba(17,26,51,.6);
+  border: 1px solid rgba(38,49,82,.75);
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(0,0,0,.35);
   padding: 20px;
+  backdrop-filter: blur(6px);
 }
-
-/* Inputs grandes para móvil */
-.field input {
+.field{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+  margin-top: 14px;
+}
+.field input{
+  width: 100%;
   padding: 12px;
-  font-size: 16px;
+  font-size: 16px; /* evita zoom en iPhone */
 }
-
-/* Botón ancho completo */
-.actions {
-  display: flex;
-  flex-direction: column;
-}
-
-.actions button {
+.actions button{
   width: 100%;
   padding: 14px;
   font-size: 16px;
 }
+.msg{
+  margin-top: 8px;
+  text-align:center;
+  font-size: 14px;
+}
 
-/* Ajustes en pantallas pequeñas */
-@media (max-width: 480px) {
-  .auth-card {
+/* ===========================
+   Responsive tweaks (Global)
+   =========================== */
+@media (max-width: 720px){
+  .wrap, .layout{ padding: 26px 16px; }
+  thead th, tbody td{ padding: 12px; }
+  nav, .nav-container{ padding: 10px 16px; }
+}
+
+@media (max-width: 600px){
+  /* toolbar: botón full sin romper otros botones */
+  .toolbar button{ width: 100%; }
+
+  /* modal full width */
+  .modal{
+    width: 100%;
+    border-radius: 0;
+  }
+
+  /* thumbs un poco más bajas */
+  .thumb{ height: 110px; }
+}
+
+@media (max-width: 480px){
+  /* Login: que no quede “abajo” en iPhone */
+  .auth-page{
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+  .auth-card{
+    max-width: 100%;
     padding: 16px;
     border-radius: 12px;
   }
-
-  .auth-card h1 {
+  .auth-card h1{
     font-size: 24px;
-    text-align: center;
+    text-align:center;
   }
-
-  .auth-card p {
+  .auth-card p{
     font-size: 14px;
-    text-align: center;
-  }
-
-  .field label {
-    font-size: 14px;
+    text-align:center;
   }
 }
