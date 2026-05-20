@@ -3,11 +3,9 @@ const express = require("express");
 const cors = require("cors");
 
 app.use(cors({
-  origin: [
-    "https://cursos-online-red.vercel.app",   // tu frontend
-    "http://localhost:3000"                   // opcional (para pruebas)
-  ],
-  credentials: true
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 
