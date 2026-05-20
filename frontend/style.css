@@ -581,11 +581,19 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
    LOGIN (Responsive real)
    =========================== */
 .auth-page{
-  min-height: 100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  min-height: 100svh; /* ✅ FIX REAL */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 16px;
+}
+
+/* fallback para navegadores antiguos */
+@supports not (height: 100svh){
+  .auth-page{
+  min-height: 100svh; /* ✅ ESTE ES EL FIX PRINCIPAL */
+}
+
 }
 .auth-card{
   width: 100%;
@@ -642,12 +650,15 @@ tbody tr:nth-child(7) { animation-delay:0.35s; }
   .thumb{ height: 110px; }
 }
 
-@media (max-width: 480px){
-  /* Login: que no quede “abajo” en iPhone */
+
+media (max-width: 480px){
+  /* Login: FIX iPhone real */
   .auth-page{
+    min-height: 100svh; /* ✅ AGREGADO CLAVE */
     align-items: flex-start;
-    padding-top: 60px;
+    padding-top: 90px; /* 🔥 súbelo un poco más */
   }
+
   .auth-card{
     max-width: 100%;
     padding: 16px;
