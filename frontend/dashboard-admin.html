@@ -60,17 +60,22 @@
 <body>
 
 <nav class="nav-container">
-  
+
+  <!-- IZQUIERDA -->
   <div class="nav-left">
     <a href="index.html">Inicio</a>
     <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
     <a href="certificados.html" id="link-cert">Certificados</a>
-    <a href="estudiantes.html">Estudiantes</a>
-    <a href="consultas.html">Consultas</a>
-    <a href="dashboard-admin.html">Dashboard</a>
+    <a href="estudiantes.html" id="link-est">Estudiantes</a>
+    <a href="consultas.html" id="link-con">Consultas</a>
+    <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
   </div>
 
-  <div class="nav-right">
+  <!-- 🔥 BOTÓN HAMBURGUESA -->
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+  <!-- DERECHA (MENÚ QUE SE OCULTA) -->
+  <div class="nav-right" id="menu">
     <a href="#" id="link-logout">Cerrar sesión</a>
   </div>
 
