@@ -9,19 +9,13 @@
 <body>
 
 <nav class="nav-container">
-
-  <!-- IZQUIERDA (SIEMPRE visible) -->
   <div class="nav-left">
     <a href="index.html">Inicio</a>
   </div>
 
-  <!-- BOTÓN HAMBURGUESA -->
   <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
-  <!-- MENÚ (todo aquí adentro) -->
   <div class="nav-menu" id="menu">
-
-    <!-- Links de navegación -->
     <div class="nav-links">
       <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
       <a href="certificados.html" id="link-cert">Certificados</a>
@@ -30,16 +24,13 @@
       <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
     </div>
 
-    <!-- Auth -->
     <div class="nav-auth">
       <a href="login.html" id="link-login">Iniciar sesión</a>
       <a href="register.html" id="link-register">Registrarse</a>
       <a href="#" id="link-logout">Cerrar sesión</a>
     </div>
-
   </div>
 </nav>
-
 
 <main class="layout">
 
@@ -50,7 +41,7 @@
     <!-- FILTRO -->
     <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
       <input id="buscar" placeholder="Filtrar por acción, email o ID" style="flex:1;">
-      <button onclick="cargarLogs()">Buscar</button>
+      <button id="btn-buscar-logs">Buscar</button>
     </div>
 
     <!-- TABLA -->
@@ -67,23 +58,32 @@
       </table>
     </div>
 
-    <!-- PAGINACIÓN -->
-    <div style="display:flex; gap:8px; margin-top:16px;">
-      <button onclick="prev()">Anterior</button>
-      <span id="pagina"></span>
-      <button onclick="next()">Siguiente</button>
+    <!-- ✅ PAGINACIÓN NUMÉRICA (igual al catálogo) -->
+    <div class="paginacion-wrapper" style="margin-top:16px;">
+      <button id="btn-prev-logs">Anterior</button>
+
+      <!-- usa el mismo ID que estilizas en style.css -->
+      <div id="paginacion"></div>
+
+      <button id="btn-next-logs">Siguiente</button>
     </div>
+
+    <p id="info-pagina" style="text-align:center;"></p>
   </div>
 
 </main>
 
 <script src="app.js"></script>
+
 <script>
 let logs = [];
 let usuariosMap = {};
 let page = 1;
 const limit = 10;
 
+/* =========================
+   CARGAR LOGS (200 máx) + usuarios
+   ========================= */
 async function cargarLogs(){
   try{
     const q = (document.getElementById("buscar").value || "").toLowerCase();
@@ -101,7 +101,7 @@ async function cargarLogs(){
 
     if(q){
       logs = logs.filter(l =>
-        l.accion.toLowerCase().includes(q) ||
+        (l.accion || "").toLowerCase().includes(q) ||
         (l.usuarioId || "").toLowerCase().includes(q) ||
         (usuariosMap[l.usuarioId] || "").toLowerCase().includes(q)
       );
@@ -109,11 +109,15 @@ async function cargarLogs(){
 
     page = 1;
     render();
+    renderPaginacionNumerica();
   }catch(e){
     alert(e.message);
   }
 }
 
+/* =========================
+   RENDER TABLA (slice por página)
+   ========================= */
 function render(){
   const tbody = document.getElementById("tabla-logs");
   tbody.innerHTML = "";
@@ -126,34 +130,87 @@ function render(){
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${l.accion}</td>
+      <td>${l.accion || ""}</td>
       <td>
         <strong>${email}</strong><br>
         <small style="color:#94a3b8;">${l.usuarioId || ""}</small>
       </td>
-      <td>${new Date(l.fecha).toLocaleString()}</td>
+      <td>${l.fecha ? new Date(l.fecha).toLocaleString() : ""}</td>
     `;
-
     tbody.appendChild(tr);
   });
 
-  pagina.textContent = `Página ${page} de ${Math.ceil(logs.length / limit)}`;
+  const totalPages = Math.max(Math.ceil(logs.length / limit), 1);
+  document.getElementById("info-pagina").textContent = `Página ${page} de ${totalPages}`;
 }
 
-function next(){
-  if(page * limit < logs.length){
-    page++;
-    render();
+/* =========================
+   PAGINACIÓN NUMÉRICA (igual al catálogo)
+   ========================= */
+function renderPaginacionNumerica(){
+  const cont = document.getElementById("paginacion");
+  const btnPrev = document.getElementById("btn-prev-logs");
+  const btnNext = document.getElementById("btn-next-logs");
+
+  const totalPages = Math.max(Math.ceil(logs.length / limit), 1);
+
+  btnPrev.disabled = page <= 1;
+  btnNext.disabled = page >= totalPages;
+
+  btnPrev.onclick = () => { if(page > 1){ page--; render(); renderPaginacionNumerica(); } };
+  btnNext.onclick = () => { if(page < totalPages){ page++; render(); renderPaginacionNumerica(); } };
+
+  // si solo 1 página, no mostrar números
+  if (totalPages <= 1){
+    cont.innerHTML = "";
+    return;
+  }
+
+  cont.innerHTML = "";
+
+  const maxBotones = 7;
+  let inicio = Math.max(page - 3, 1);
+  let fin = Math.min(inicio + maxBotones - 1, totalPages);
+  inicio = Math.max(fin - maxBotones + 1, 1);
+
+  const btnPag = (p, activo) => {
+    const b = document.createElement("button");
+    b.textContent = String(p);
+    b.className = activo ? "activo" : ""; // usa tu estilo del CSS
+    b.disabled = activo;
+    b.onclick = () => { page = p; render(); renderPaginacionNumerica(); };
+    return b;
+  };
+
+  const puntos = () => {
+    const s = document.createElement("span");
+    s.textContent = "...";
+    s.style.padding = "0 6px";
+    return s;
+  };
+
+  if (inicio > 1){
+    cont.appendChild(btnPag(1, page === 1));
+    if (inicio > 2) cont.appendChild(puntos());
+  }
+
+  for (let p = inicio; p <= fin; p++){
+    cont.appendChild(btnPag(p, p === page));
+  }
+
+  if (fin < totalPages){
+    if (fin < totalPages - 1) cont.appendChild(puntos());
+    cont.appendChild(btnPag(totalPages, page === totalPages));
   }
 }
 
-function prev(){
-  if(page > 1){
-    page--;
-    render();
-  }
-}
+/* Eventos */
+document.getElementById("btn-buscar-logs").onclick = cargarLogs;
+document.getElementById("buscar").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") cargarLogs();
+});
 
+/* init */
 cargarLogs();
 </script>
 
