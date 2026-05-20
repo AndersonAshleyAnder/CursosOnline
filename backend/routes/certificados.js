@@ -83,8 +83,19 @@ module.exports = (getDB) => {
       });
 
       if (existente) {
-        return res.download(existente.pdfPath);
-      }
+  // ✅ Si existe el registro pero NO existe el archivo en disco (Render reinició),
+  // regeneramos el PDF y evitamos "Not Found"
+  if (existente.pdfPath && fs.existsSync(existente.pdfPath)) {
+    return res.download(existente.pdfPath);
+  }
+
+  console.warn("⚠️ Certificado existe en DB pero PDF no existe en disco. Regenerando...", {
+    pdfPath: existente.pdfPath
+  });
+
+  // Opcional: borra el registro viejo para evitar duplicados inconsistentes
+  await db.collection("certificados").deleteOne({ _id: existente._id });
+}
 
       // ===============================
       // 🎓 GENERAR PDF
@@ -92,7 +103,7 @@ module.exports = (getDB) => {
       const codigo = `CERT-${new Date().getFullYear()}-${Date.now()}`;
 
       const certDir = path.join(__dirname, "..", "certificados");
-      if (!fs.existsSync(certDir)) fs.mkdirSync(certDir);
+     if (!fs.existsSync(certDir)) fs.mkdirSync(certDir, { recursive: true });
 
       const pdfPath = path.join(certDir, `${codigo}.pdf`);
       const doc = new PDFDocument({ size: "A4", margin: 50 });
