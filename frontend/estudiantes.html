@@ -134,7 +134,7 @@ function showLoader(v){
 async function cargar(){
   try{
     showLoader(true);
-    const q = buscar.value || "";
+    const q = document.getElementById("buscar").value || "";
     const res = await authFetch(`${API_URL}/api/admin/usuarios?q=${encodeURIComponent(q)}`);
     usuarios = await res.json();
     total.textContent = `Total estudiantes: ${usuarios.length}`;
@@ -174,7 +174,7 @@ function prev(){ if(page>1){page--;render();}}
 async function crear(){
   try{
     showLoader(true);
-    wait authFetch(`${API_URL}/api/admin/usuarios`, {
+    await authFetch(`${API_URL}/api/admin/usuarios`, {
       method:"POST",
       body:JSON.stringify({
         nombre:nombre.value,
