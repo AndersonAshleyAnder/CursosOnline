@@ -489,10 +489,10 @@ function instalarModalPreview() {
     if (e.target === overlay) overlay.classList.remove("show");
   });
 }
-// ✅ PARTE B: cargar reseñas del curso en el modal (solo catálogo / index)
+// ✅ PARTE B: cargar reseñas del curso y pintarlas dentro del modal
 async function cargarResenasEnModal(cursoId) {
   const box = document.getElementById("modal-reviews");
-  if (!box) return; // ✅ no rompe otras páginas
+  if (!box) return; // no rompe otras páginas
 
   box.innerHTML = `<div style="opacity:.75">Cargando reseñas…</div>`;
 
@@ -526,6 +526,10 @@ async function cargarResenasEnModal(cursoId) {
     box.innerHTML = `<div style="color:#ef4444">Error cargando reseñas</div>`;
   }
 }
+
+// (opcional) para probar desde consola más fácil
+window.cargarResenasEnModal = cargarResenasEnModal;
+
 function abrirPreview(cursoId, estaInscrito) {
   const overlay = document.getElementById("modal-overlay");
   if (!overlay) return;
