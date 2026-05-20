@@ -41,7 +41,7 @@
 </nav>
 
 
-<main>
+<main class="layout">
 
   <h1>Auditoría Administrativa</h1>
   <p>Registro completo de acciones realizadas por el administrador.</p>
@@ -53,16 +53,18 @@
   </div>
 
   <!-- TABLA -->
-  <table>
-    <thead>
-      <tr>
-        <th>Acción</th>
-        <th>Usuario afectado</th>
-        <th>Fecha</th>
-      </tr>
-    </thead>
-    <tbody id="tabla-logs"></tbody>
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <th>Usuario afectado</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-logs"></tbody>
+    </table>
+  </div>
 
   <!-- PAGINACIÓN -->
   <div style="display:flex; gap:8px; margin-top:16px;">
@@ -72,6 +74,7 @@
   </div>
 
 </main>
+``
 
 <script src="app.js"></script>
 <script>
