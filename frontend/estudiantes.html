@@ -79,11 +79,17 @@
   </table>
 
   <!-- PAGINACIÓN -->
-  <div style="display:flex; gap:8px; margin-top:16px;">
-    <button onclick="prev()">Anterior</button>
-    <span id="pagina"></span>
-    <button onclick="next()">Siguiente</button>
-  </div>
+ <!-- PAGINACIÓN (NUMÉRICA) -->
+<div class="paginacion-wrapper" style="margin-top:16px;">
+  <button id="btn-prev-local">Anterior</button>
+
+  <div id="paginacion-local"></div>
+
+  <button id="btn-next-local">Siguiente</button>
+</div>
+
+<p id="info-pagina-local"></p>
+
 
 </main>
 
