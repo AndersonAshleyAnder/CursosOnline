@@ -82,13 +82,14 @@ const limit = 10;
 
 async function cargarLogs(){
   try{
-    const q = buscar.value?.toLowerCase() || "";
+    const q = (document.getElementById("buscar").value || "").toLowerCase();
 
-    const logsResp = await authFetch("/api/admin/logs?limit=200");
+    const logsResp = await authFetch(`${API_URL}/api/admin/logs?limit=200`);
     logs = await logsResp.json();
 
-    const usersResp = await authFetch("/api/admin/usuarios");
+    const usersResp = await authFetch(`${API_URL}/api/admin/usuarios`);
     const users = await usersResp.json();
+
     usuariosMap = {};
     users.forEach(u => {
       usuariosMap[u._id] = u.email;
