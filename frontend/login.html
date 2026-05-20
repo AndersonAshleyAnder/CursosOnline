@@ -2,15 +2,18 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="style.css">
-  
 </head>
+
 <body>
 
-  <!-- Nav opcional. Si no quieres nav en login, puedes borrarlo -->
-  <nav>
-    <a href="index.html">Inicio</a>
+  <!-- ✅ Nav con el mismo estilo del resto -->
+  <nav class="nav-container">
+    <div class="nav-left">
+      <a href="index.html">Inicio</a>
+    </div>
   </nav>
 
   <div class="auth-page">
@@ -18,12 +21,12 @@
       <h1>Iniciar sesión</h1>
 
       <p>
-        ¿No tienes cuenta? <a class="small-link" href="register.html">Regístrate aquí</a>.
+        ¿No tienes cuenta?
+        <!-- ✅ usa la clase que ya tienes en style.css -->
+        <a class="mini-link" href="register.html">Regístrate aquí</a>.
       </p>
 
-      <!-- ✅ CAMBIO CLAVE: envolver inputs + botón en un FORM -->
       <form id="login-form" method="POST" onsubmit="return false;">
-
         <div class="field">
           <label for="email"><strong>Email:</strong></label>
           <input
@@ -47,11 +50,9 @@
         </div>
 
         <div class="actions">
-          <!-- ✅ IMPORTANTE: type submit para que Enter dispare el login -->
           <button id="btn-login" type="submit">Entrar</button>
           <span id="msg" class="msg"></span>
         </div>
-
       </form>
     </div>
   </div>
@@ -59,16 +60,11 @@
   <script>
     const API_URL = "https://cursosonline-9def.onrender.com";
 
-    // ✅ CAMBIO CLAVE: escuchar SUBMIT (Enter funciona automáticamente)
     document.getElementById("login-form").onsubmit = async function(e) {
-  e.preventDefault();
-  return await login();
-};
+      e.preventDefault();
+      return await login();
+    };
 
-    // (Opcional) Deja el click también, no hace daño
-    // document.getElementById("btn-login").addEventListener("click", login);
-
-    // (Opcional) UX: enfocar email al abrir
     document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("email");
       if (email) email.focus();
@@ -94,7 +90,6 @@
         localStorage.setItem("rol", data.rol || "");
         localStorage.setItem("estudianteId", data.estudianteId || "");
 
-        // Auto-inscripción si venía desde catálogo
         const pendingCourseId = localStorage.getItem("pendingCourseId");
         if (pendingCourseId && data.rol === "estudiante") {
           await fetch(`${API_URL}/api/progreso`, {
@@ -119,5 +114,6 @@
       }
     }
   </script>
+
 </body>
 </html>
