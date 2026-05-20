@@ -46,35 +46,36 @@
   <h1>Auditoría Administrativa</h1>
   <p>Registro completo de acciones realizadas por el administrador.</p>
 
-  <!-- FILTRO -->
-  <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
-    <input id="buscar" placeholder="Filtrar por acción, email o ID" style="flex:1;">
-    <button onclick="cargarLogs()">Buscar</button>
-  </div>
+  <div class="section-card">
+    <!-- FILTRO -->
+    <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
+      <input id="buscar" placeholder="Filtrar por acción, email o ID" style="flex:1;">
+      <button onclick="cargarLogs()">Buscar</button>
+    </div>
 
-  <!-- TABLA -->
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Acción</th>
-          <th>Usuario afectado</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-logs"></tbody>
-    </table>
-  </div>
+    <!-- TABLA -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Acción</th>
+            <th>Usuario afectado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-logs"></tbody>
+      </table>
+    </div>
 
-  <!-- PAGINACIÓN -->
-  <div style="display:flex; gap:8px; margin-top:16px;">
-    <button onclick="prev()">Anterior</button>
-    <span id="pagina"></span>
-    <button onclick="next()">Siguiente</button>
+    <!-- PAGINACIÓN -->
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button onclick="prev()">Anterior</button>
+      <span id="pagina"></span>
+      <button onclick="next()">Siguiente</button>
+    </div>
   </div>
 
 </main>
-
 
 <script src="app.js"></script>
 <script>
