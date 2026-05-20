@@ -57,47 +57,61 @@ async function authFetch(url, options = {}) {
 }
 
 /* ===================================================
-   MENÚ POR ROL (ROBUSTO)
+   MENÚ POR ROL (COMPATIBLE CON NAV + HAMBURGUESA) ✅
+   - No fuerza "block/inline-flex", deja que el CSS mande
+   - Solo oculta con display:none
 =================================================== */
 function aplicarMenuPorRol() {
   const rol = localStorage.getItem("rol") || "";
   const logged = !!localStorage.getItem("token");
+  const esAdmin = logged && rol === "admin";
+  const esEstudiante = logged && rol === "estudiante";
 
   const linkMis = document.getElementById("link-mis");
   const linkCert = document.getElementById("link-cert");
   const linkEst = document.getElementById("link-est");
   const linkCon = document.getElementById("link-con");
   const linkDash = document.getElementById("link-dashboard");
+
   const linkLogin = document.getElementById("link-login");
   const linkRegister = document.getElementById("link-register");
   const linkLogout = document.getElementById("link-logout");
 
-  if (linkLogin) linkLogin.style.display = logged ? "none" : "block";
-if (linkRegister) linkRegister.style.display = logged ? "none" : "block";
-if (linkLogout) linkLogout.style.display = logged ? "block" : "none";
+  const show = (el) => { if (el) el.style.removeProperty("display"); };
+  const hide = (el) => { if (el) el.style.display = "none"; };
 
-  if (linkMis) linkMis.style.display = logged ? "block" : "none";
-  if (linkCert) linkCert.style.display = logged ? "block" : "none";
+  // Auth links
+  if (!logged) {
+    show(linkLogin);
+    show(linkRegister);
+    hide(linkLogout);
+  } else {
+    hide(linkLogin);
+    hide(linkRegister);
+    show(linkLogout);
+  }
 
-  const esAdmin = logged && rol === "admin";
+  // Estudiante links
+  if (esEstudiante) {
+    show(linkMis);
+    show(linkCert);
+  } else {
+    hide(linkMis);
+    hide(linkCert);
+  }
 
-// ✅ SOLO ESTUDIANTES ven esto
-if (linkMis) linkMis.style.display =
-  (logged && rol === "estudiante") ? "block" : "none";
+  // Admin links
+  if (esAdmin) {
+    show(linkEst);
+    show(linkCon);
+    show(linkDash);
+  } else {
+    hide(linkEst);
+    hide(linkCon);
+    hide(linkDash);
+  }
 
-if (linkCert) linkCert.style.display =
-  (logged && rol === "estudiante") ? "block" : "none";
-
-// ✅ SOLO ADMIN ve esto
-if (linkEst) linkEst.style.display =
-  esAdmin ? "block" : "none";
-
-if (linkCon) linkCon.style.display =
-  esAdmin ? "block" : "none";
-
-if (linkDash) linkDash.style.display =
-  esAdmin ? "block" : "none";
-
+  // Logout handler
   if (linkLogout) {
     linkLogout.onclick = (e) => {
       e.preventDefault();
@@ -110,6 +124,7 @@ if (linkDash) linkDash.style.display =
 document.addEventListener("DOMContentLoaded", () => {
   aplicarMenuPorRol();
 });
+
 
 /* ===================================================
    FUNCIONES GLOBAL PARA curso.html (TOKEN)
