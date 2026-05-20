@@ -173,26 +173,31 @@
 
 <nav class="nav-container">
 
-  <!-- IZQUIERDA -->
+  <!-- IZQUIERDA (SIEMPRE VISIBLE) -->
   <div class="nav-left">
     <a href="index.html">Inicio</a>
+  </div>
+
+  <!-- BOTÓN -->
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+  <!-- ✅ TODO EL MENÚ AQUÍ -->
+  <div class="nav-menu" id="menu">
+
     <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
     <a href="certificados.html" id="link-cert">Certificados</a>
     <a href="estudiantes.html" id="link-est">Estudiantes</a>
     <a href="consultas.html" id="link-con">Consultas</a>
     <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
-  </div>
 
-  <!-- 🔥 BOTÓN HAMBURGUESA -->
-  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-
-  <!-- DERECHA (MENÚ QUE SE OCULTA) -->
-  <div class="nav-right" id="menu">
+    <!-- ✅ AUTENTICACIÓN (IMPORTANTÍSIMO) -->
+    <a href="login.html" id="link-login">Iniciar sesión</a>
+    <a href="register.html" id="link-register">Registrarse</a>
     <a href="#" id="link-logout">Cerrar sesión</a>
+
   </div>
 
 </nav>
-
 
 <div class="wrap">
   <h1>Plataforma de Cursos Online</h1>
