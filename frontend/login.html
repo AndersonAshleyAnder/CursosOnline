@@ -73,7 +73,7 @@
       </p>
 
       <!-- ✅ CAMBIO CLAVE: envolver inputs + botón en un FORM -->
-      <form id="login-form">
+      <form id="login-form" method="POST" onsubmit="return false;">
 
         <div class="field">
           <label for="email"><strong>Email:</strong></label>
@@ -111,10 +111,10 @@
     const API_URL = "https://cursosonline-9def.onrender.com";
 
     // ✅ CAMBIO CLAVE: escuchar SUBMIT (Enter funciona automáticamente)
-    document.getElementById("login-form").addEventListener("submit", async (e) => {
-      e.preventDefault(); // evita recargar la página
-      await login();
-    });
+    document.getElementById("login-form").onsubmit = async function(e) {
+  e.preventDefault();
+  return await login();
+};
 
     // (Opcional) Deja el click también, no hace daño
     // document.getElementById("btn-login").addEventListener("click", login);
