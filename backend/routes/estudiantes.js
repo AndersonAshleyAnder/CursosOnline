@@ -17,21 +17,49 @@ module.exports = (getDB) => {
   // ===============================
   // ✅ GET estudiantes
   // ===============================
-  router.get("/", async (req, res) => {
-    try {
-      const estudiantes = await getDB()
-        .collection("estudiantes")
-        .find()
-        .sort({ fechaRegistro: -1 })
-        .toArray();
+ // ===============================
+// ✅ GET estudiantes (PAGINADO + BÚSQUEDA)
+// /api/estudiantes?page=1&limit=10&q=texto
+// ===============================
+router.get("/", async (req, res) => {
+  try {
+    const db = getDB();
 
-      res.json(estudiantes);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Error obteniendo estudiantes" });
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || "10", 10), 1), 50);
+    const skip = (page - 1) * limit;
+
+    const q = (req.query.q || "").trim();
+    const filtro = {};
+
+    if (q) {
+      // busca por nombre o email
+      filtro.$or = [
+        { nombre: { $regex: q, $options: "i" } },
+        { email: { $regex: q, $options: "i" } }
+      ];
     }
-  });
 
+    const col = db.collection("estudiantes");
+
+    const [total, data] = await Promise.all([
+      col.countDocuments(filtro),
+      col.find(filtro)
+        .sort({ fechaRegistro: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray()
+    ]);
+
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    res.json({ data, page, limit, total, totalPages });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error obteniendo estudiantes" });
+  }
+});
   // ===============================
   // ✅ POST estudiante
   // ===============================
