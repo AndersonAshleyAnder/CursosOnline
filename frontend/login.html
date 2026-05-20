@@ -4,22 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
-  <link rel="stylesheet" href <!-- ✅ NAV UNIFICADO -->
+  <link rel="stylesheet" href="style.csssimple (no hamburguesa en login) -->
   <nav class="nav-container">
     <div class="nav-left">
-      <ndex.htmlInicio</a>
-    </div>
-
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-
-    <div class="nav-menu" id="menu">
-      <div class="nav-links">
-        <a href="mis-cursos.html" id="link    <a href="certificados.html" id="link-cert <a href="estudiantes.html"s</a>
-        <a href="consultas.html" id="link-cona href="dashboard-admin.html" id="link </div>
-
-      <div class="nav-auth">
-        <a href="login.html" id="link-login  <a href="register.html" id="
-        <a href="#" id="link     </div>
+      <a href="indexio</a>
     </div>
   </nav>
 
@@ -50,9 +38,10 @@
     </div>
   </div>
 
-  <!-- ✅ app.js UNA sola vez (API_URL, toggleMenu, aplicarMenuPorRol, authFetch) -->
-  <script src="app.js<script>
-    // Enter funciona
+  <!-- app.js (UNA sola vez) -->
+  <script src="app.js"></script>
+
+  <script>
     document.getElementById("login-form").onsubmit = async function(e){
       e.preventDefault();
       await login();
@@ -71,6 +60,7 @@
       msg.textContent = "Validando...";
 
       try {
+        // ✅ Usa API_URL del app.js (NO declares const API_URL aquí)
         const res = await fetch(`${API_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -83,20 +73,6 @@
         localStorage.setItem("token", data.token);
         localStorage.setItem("rol", data.rol || "");
         localStorage.setItem("estudianteId", data.estudianteId || "");
-
-        // Auto-inscripción si venía desde catálogo
-        const pendingCourseId = localStorage.getItem("pendingCourseId");
-        if (pendingCourseId && data.rol === "estudiante") {
-          await fetch(`${API_URL}/api/progreso`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + data.token
-            },
-            body: JSON.stringify({ cursoId: pendingCourseId })
-          });
-          localStorage.removeItem("pendingCourseId");
-        }
 
         msg.textContent = "✅ OK";
 
