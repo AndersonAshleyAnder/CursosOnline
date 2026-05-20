@@ -276,9 +276,30 @@ document.addEventListener("DOMContentLoaded", () => {
 <!-- ✅ PARTE A: pega esto EXACTAMENTE aquí -->
 <hr>
 <h3 style="margin:10px 0;">Reseñas</h3>
-<div id="modal-reviews" style="display:flex; flex-direction:column; gap:10px;"></div>
+<div id="modal-reviews" style="display:none;"></div>
 
       <div id="modal-actions"></div>
+
+    </div>
+  </div>
+</div>
+  <!-- ✅ MODAL RESEÑAS (NUEVO) -->
+<div id="reviews-overlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-content">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <h2 id="reviews-title" style="margin:0;">Reseñas</h2>
+        <button id="btn-close-reviews" type="button">Cerrar</button>
+      </div>
+
+      <div id="reviews-summary" style="margin:10px 0; color:rgba(148,163,184,.95);"></div>
+
+      <div id="reviews-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+      <div style="display:flex; justify-content:center; margin-top:14px;">
+        <button id="btn-more-reviews" type="button">Cargar más</button>
+      </div>
 
     </div>
   </div>
