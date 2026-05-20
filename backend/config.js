@@ -1,13 +1,22 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 
-const uri = "mongodb+srv://anpadilla:P4d1llamran@cluster0.huh4a86.mongodb.net/cursos_online?authSource=admin";
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DBNAME || "cursos_online";
 
-const client = new MongoClient(uri);
+if (!uri) {
+  throw new Error(
+    "MONGODB_URI no está definido. Define la variable de entorno en .env o en Vercel."
+  );
+}
+
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 async function connectDB() {
   await client.connect();
-  console.log("✅ Conectado a MongoDB Atlas");
-  return client.db("cursos_online");
+  return client.db(dbName);
 }
 
 module.exports = connectDB;
