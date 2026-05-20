@@ -489,7 +489,43 @@ function instalarModalPreview() {
     if (e.target === overlay) overlay.classList.remove("show");
   });
 }
+// ✅ PARTE B: cargar reseñas del curso en el modal (solo catálogo / index)
+async function cargarResenasEnModal(cursoId) {
+  const box = document.getElementById("modal-reviews");
+  if (!box) return; // ✅ no rompe otras páginas
 
+  box.innerHTML = `<div style="opacity:.75">Cargando reseñas…</div>`;
+
+  try {
+    const res = await fetch(`${API_URL}/api/cursos/${cursoId}/resenas?limit=10`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      box.innerHTML = `<div style="opacity:.75">Aún no hay reseñas para este curso.</div>`;
+      return;
+    }
+
+    box.innerHTML = data.map(r => {
+      const rating = Math.max(1, Math.min(5, Number(r.rating || 0)));
+      const stars = "⭐".repeat(rating);
+      const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString() : "";
+      const comentario = (r.comentario || "").trim() || "—";
+
+      return `
+        <div style="padding:10px;border:1px solid rgba(38,49,82,.7);border-radius:12px;background:rgba(17,26,51,.45);">
+          <div style="display:flex;justify-content:space-between;gap:10px;">
+            <strong>${stars}</strong>
+            <small style="color:rgba(148,163,184,.9)">${fecha}</small>
+          </div>
+          <div style="margin-top:6px;color:rgba(226,232,240,.95)">${comentario}</div>
+        </div>
+      `;
+    }).join("");
+
+  } catch (e) {
+    box.innerHTML = `<div style="color:#ef4444">Error cargando reseñas</div>`;
+  }
+}
 function abrirPreview(cursoId, estaInscrito) {
   const overlay = document.getElementById("modal-overlay");
   if (!overlay) return;
@@ -557,7 +593,7 @@ function abrirPreview(cursoId, estaInscrito) {
       actions.appendChild(b);
     }
   }
-
+cargarResenasEnModal(cursoId);
   overlay.classList.add("show");
 }
 
