@@ -1,4 +1,4 @@
-const API_URL = "https://cursos-online-red.vercel.app/";
+const API_URL = "https://cursosonline-9def.onrender.com";
 
 /* ===================================================
    AUTH / SESIÓN
