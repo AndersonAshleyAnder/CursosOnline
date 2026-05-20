@@ -16,41 +16,28 @@ function logout() {
   localStorage.removeItem("estudianteId");
   localStorage.removeItem("pendingCourseId");
 
-  aplicarMenuPorRol();  // ✅ ESTA ES LA ÚNICA LÍNEA NUEVA
-
+  aplicarMenuPorRol();
   window.location.href = "index.html";
 }
-
 window.logout = logout;
 
 async function authFetch(url, options = {}) {
   const token = getToken();
   const headers = Object.assign({}, options.headers || {});
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  if (options.body && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
-  }
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
 
   const res = await fetch(url, Object.assign({}, options, { headers }));
 
-  // ✅ SOLO cerrar sesión si no hay token realmente
   if (res.status === 401) {
     console.warn("401 detectado");
-
-    // 👉 SOLO cerrar si NO hay token
-    if (!token) {
-      logout();
-    }
-
+    if (!token) logout();
     throw new Error("No autorizado");
   }
 
-  // ✅ 403 = no permiso → NO logout
   if (res.status === 403) {
     console.warn("403 detectado");
-
     mostrarToast("No tienes permisos para esta sección", "error");
-
     throw new Error("Forbidden");
   }
 
@@ -58,10 +45,8 @@ async function authFetch(url, options = {}) {
 }
 
 /* ===================================================
-   ⭐ HELPERS DE RATING (PEGAR AQUÍ) ✅
+   ⭐ HELPERS DE RATING
 =================================================== */
-
-/* ===== ⭐ Rating helper ===== */
 function ratingText(avg, count) {
   const a = Number(avg || 0);
   const c = Number(count || 0);
@@ -73,9 +58,7 @@ function ratingText(avg, count) {
 }
 
 /* ===================================================
-   MENÚ POR ROL (COMPATIBLE CON NAV + HAMBURGUESA) ✅
-   - No fuerza "block/inline-flex", deja que el CSS mande
-   - Solo oculta con display:none
+   MENÚ POR ROL (COMPATIBLE CON NAV + HAMBURGUESA)
 =================================================== */
 function aplicarMenuPorRol() {
   const rol = localStorage.getItem("rol") || "";
@@ -96,7 +79,6 @@ function aplicarMenuPorRol() {
   const show = (el) => { if (el) el.style.removeProperty("display"); };
   const hide = (el) => { if (el) el.style.display = "none"; };
 
-  // Auth links
   if (!logged) {
     show(linkLogin);
     show(linkRegister);
@@ -107,7 +89,6 @@ function aplicarMenuPorRol() {
     show(linkLogout);
   }
 
-  // Estudiante links
   if (esEstudiante) {
     show(linkMis);
     show(linkCert);
@@ -116,7 +97,6 @@ function aplicarMenuPorRol() {
     hide(linkCert);
   }
 
-  // Admin links
   if (esAdmin) {
     show(linkEst);
     show(linkCon);
@@ -127,7 +107,6 @@ function aplicarMenuPorRol() {
     hide(linkDash);
   }
 
-  // Logout handler
   if (linkLogout) {
     linkLogout.onclick = (e) => {
       e.preventDefault();
@@ -140,7 +119,6 @@ function aplicarMenuPorRol() {
 document.addEventListener("DOMContentLoaded", () => {
   aplicarMenuPorRol();
 });
-
 
 /* ===================================================
    FUNCIONES GLOBAL PARA curso.html (TOKEN)
@@ -169,8 +147,6 @@ window.obtenerResena = async function (cursoId) {
   const res = await authFetch(url);
   return res.json();
 };
-
-
 
 /* ===================================================
    CATÁLOGO (Cards + Modal Preview + Paginación)
@@ -253,17 +229,17 @@ function renderCards(grid, cursos, inscritos) {
     card.dataset.cursoId = c._id;
 
     card.innerHTML = `
-     <div class="thumb" style="${img ? `background-image:url('${img}');` : ""}">
-</div>
-
+      <div class="thumb" style="${img ? `background-image:url('${img}');` : ""}"></div>
 
       <div class="content">
         <p class="title">${c.nombre}</p>
-       <div class="meta">
-  <span>⏱ ${c.duracionHoras} h</span>
-  <span>📌 ${c.categoria}</span>
-  ${ratingText(c.ratingPromedio, c.totalResenas)}
-</div>
+
+        <div class="meta">
+          <span>⏱ ${c.duracionHoras} h</span>
+          <span>📌 ${c.categoria}</span>
+          ${ratingText(c.ratingPromedio, c.totalResenas)}
+        </div>
+
         <p class="desc">${desc}</p>
       </div>
 
@@ -322,10 +298,8 @@ async function inscribirDesdeCatalogo(cursoId, btn) {
     const data = await res.json();
 
     const msg = (data?.mensaje || "").toLowerCase();
-    if (msg.includes("ya está inscrito"))
-      alert("✅ Ya estás inscrito. Ve a Mis Cursos.");
-    else
-      alert("✅ Inscripción exitosa");
+    if (msg.includes("ya está inscrito")) alert("✅ Ya estás inscrito. Ve a Mis Cursos.");
+    else alert("✅ Inscripción exitosa");
 
     await cargarCursos(estadoCursos.pageActual);
   } catch (e) {
@@ -343,11 +317,9 @@ async function cargarMisCursos() {
   const tabla = document.getElementById("tabla-mis-cursos");
   if (!tabla) return;
 
-  // ✅ Obtener cursos
   const res = await authFetch(`${API_URL}/api/progreso/me`);
   const data = await res.json();
 
-  // ✅ Obtener certificados del usuario
   const resCert = await authFetch(`${API_URL}/api/certificados/me`);
   const certificados = await resCert.json();
 
@@ -362,21 +334,13 @@ async function cargarMisCursos() {
       ? p.cursoId
       : (p.cursoId?.$oid || String(p.cursoId));
 
-    // ✅ comprobar si ya existe certificado
-   const cert = certificados.find(c => {
-  let certCursoId = c.cursoId;
-
-  // ✅ normalizar posibles formatos
-  if (typeof certCursoId === "object") {
-    certCursoId =
-      certCursoId.$oid ||
-      certCursoId._id ||
-      String(certCursoId);
-  }
-
-  return String(certCursoId) === String(cursoId);
-});
-
+    const cert = certificados.find(c => {
+      let certCursoId = c.cursoId;
+      if (typeof certCursoId === "object") {
+        certCursoId = certCursoId.$oid || certCursoId._id || String(certCursoId);
+      }
+      return String(certCursoId) === String(cursoId);
+    });
 
     let estadoCertificado = `<span style="color:#888;">⛔ No disponible</span>`;
     let accionCertificado = "";
@@ -385,43 +349,22 @@ async function cargarMisCursos() {
       estadoCertificado = `<span style="color:#28a745; font-weight:bold;">✅ Disponible</span>`;
 
       if (cert) {
-        // ✅ YA EXISTE → DESCARGAR
-        accionCertificado = `
-          <button onclick="descargarCertificado('${cursoId}')">
-            Descargar
-          </button>
-        `;
+        accionCertificado = `<button onclick="descargarCertificado('${cursoId}')">Descargar</button>`;
       } else {
-        // ✅ NO EXISTE → GENERAR
-        accionCertificado = `
-          <button onclick="generarCertificado('${cursoId}')">
-            Generar
-          </button>
-        `;
+        accionCertificado = `<button onclick="generarCertificado('${cursoId}')">Generar</button>`;
       }
     }
 
-tabla.innerHTML += `
-  <tr>
-    <td>${p.curso?.[0]?.nombre || "Sin nombre"}</td>
-    <td>${completadas} / ${total}</td>
-    <td>${porcentaje} %</td>
-    <td>${estadoCertificado}</td>
-
-    <!-- ✅ VER CURSO SEPARADO -->
-    <td>
-      <a href="curso.html?cursoId=${cursoId}" class="mini-link">
-        Ver curso
-      </a>
-    </td>
-
-    <!-- ✅ BOTÓN CERTIFICADO SOLO -->
-    <td>
-      ${accionCertificado}
-    </td>
-  </tr>
-`;
-
+    tabla.innerHTML += `
+      <tr>
+        <td>${p.curso?.[0]?.nombre || "Sin nombre"}</td>
+        <td>${completadas} / ${total}</td>
+        <td>${porcentaje} %</td>
+        <td>${estadoCertificado}</td>
+        <td><a href="curso.html?cursoId=${cursoId}" class="mini-link">Ver curso</a></td>
+        <td>${accionCertificado}</td>
+      </tr>
+    `;
   });
 }
 window.cargarMisCursos = cargarMisCursos;
@@ -476,7 +419,7 @@ function generarAprendizajesPorCurso(curso) {
 }
 
 /* ===================================================
-   MODAL PREVIEW
+   MODAL PREVIEW (CURSO)
 =================================================== */
 function instalarModalPreview() {
   const overlay = document.getElementById("modal-overlay");
@@ -489,46 +432,6 @@ function instalarModalPreview() {
     if (e.target === overlay) overlay.classList.remove("show");
   });
 }
-// ✅ PARTE B: cargar reseñas del curso y pintarlas dentro del modal
-async function cargarResenasEnModal(cursoId) {
-  const box = document.getElementById("modal-reviews");
-  if (!box) return; // no rompe otras páginas
-
-  box.innerHTML = `<div style="opacity:.75">Cargando reseñas…</div>`;
-
-  try {
-    const res = await fetch(`${API_URL}/api/cursos/${cursoId}/resenas?limit=10`);
-    const data = await res.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      box.innerHTML = `<div style="opacity:.75">Aún no hay reseñas para este curso.</div>`;
-      return;
-    }
-
-    box.innerHTML = data.map(r => {
-      const rating = Math.max(1, Math.min(5, Number(r.rating || 0)));
-      const stars = "⭐".repeat(rating);
-      const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString() : "";
-      const comentario = (r.comentario || "").trim() || "—";
-
-      return `
-        <div style="padding:10px;border:1px solid rgba(38,49,82,.7);border-radius:12px;background:rgba(17,26,51,.45);">
-          <div style="display:flex;justify-content:space-between;gap:10px;">
-            <strong>${stars}</strong>
-            <small style="color:rgba(148,163,184,.9)">${fecha}</small>
-          </div>
-          <div style="margin-top:6px;color:rgba(226,232,240,.95)">${comentario}</div>
-        </div>
-      `;
-    }).join("");
-
-  } catch (e) {
-    box.innerHTML = `<div style="color:#ef4444">Error cargando reseñas</div>`;
-  }
-}
-
-// (opcional) para probar desde consola más fácil
-window.cargarResenasEnModal = cargarResenasEnModal;
 
 function abrirPreview(cursoId, estaInscrito) {
   const overlay = document.getElementById("modal-overlay");
@@ -553,19 +456,22 @@ function abrirPreview(cursoId, estaInscrito) {
 
   if (chip) chip.textContent = c.categoria || "Categoría";
   if (title) title.textContent = c.nombre || "Curso";
-  if (meta)
-    meta.innerHTML = `<span>⏱ ${c.duracionHoras || 0} h</span><span>📌 ${c.categoria || ""}</span>`;
+  if (meta) meta.innerHTML = `<span>⏱ ${c.duracionHoras || 0} h</span><span>📌 ${c.categoria || ""}</span>`;
 
   if (bullets) {
     const lista = generarAprendizajesPorCurso(c);
     bullets.innerHTML = lista.map(b => `<li>${b}</li>`).join("");
   }
 
-  if (desc)
-    desc.textContent = c.descripcionCorta || "Revisa el curso antes de inscribirte.";
+  if (desc) desc.textContent = c.descripcionCorta || "Revisa el curso antes de inscribirte.";
 
   if (actions) {
     actions.innerHTML = "";
+    actions.style.display = "flex";
+    actions.style.gap = "12px";
+    actions.style.alignItems = "center";
+
+    // Botón principal
     if (!isLoggedIn()) {
       const b = document.createElement("button");
       b.textContent = "Inscribirme";
@@ -574,17 +480,20 @@ function abrirPreview(cursoId, estaInscrito) {
         window.location.href = `login.html?redirect=${encodeURIComponent("index.html")}`;
       };
       actions.appendChild(b);
+
     } else if (getRol() !== "estudiante") {
       const b = document.createElement("button");
       b.textContent = "Solo estudiante";
       b.disabled = true;
       actions.appendChild(b);
+
     } else if (estaInscrito) {
       const a = document.createElement("a");
       a.href = `curso.html?cursoId=${cursoId}`;
       a.className = "mini-link";
       a.textContent = "Ver curso";
       actions.appendChild(a);
+
     } else {
       const b = document.createElement("button");
       b.textContent = "Inscribirme";
@@ -596,18 +505,142 @@ function abrirPreview(cursoId, estaInscrito) {
       };
       actions.appendChild(b);
     }
+
+    // Botón reseñas (modal nuevo)
+    const cnt = Number(c.totalResenas || 0);
+    const b2 = document.createElement("button");
+    b2.type = "button";
+    b2.textContent = cnt ? `Ver reseñas (${cnt})` : "Ver reseñas";
+    b2.onclick = (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      abrirModalResenas(cursoId);
+    };
+    actions.appendChild(b2);
+
+    // balance visual
+    Array.from(actions.children).forEach(el => el.style.flex = "1");
   }
-cargarResenasEnModal(cursoId);
+
   overlay.classList.add("show");
 }
 
+/* ===================================================
+   NAV HAMBURGUESA
+=================================================== */
 function toggleMenu() {
   const menu = document.getElementById("menu");
-  if (menu) {
-    menu.classList.toggle("show");
+  if (menu) menu.classList.toggle("show");
+}
+window.toggleMenu = toggleMenu;
+
+/* ===================================================
+   MODAL RESEÑAS (NUEVO) ✅
+=================================================== */
+let reviewsState = { cursoId: null, page: 1, limit: 10, totalPages: 1 };
+
+function abrirModalResenas(cursoId) {
+  const overlay = document.getElementById("reviews-overlay");
+  if (!overlay) return;
+
+  reviewsState = { cursoId, page: 1, limit: 10, totalPages: 1 };
+
+  const c = cursosPorId.get(cursoId);
+  const title = document.getElementById("reviews-title");
+  if (title) title.textContent = `Reseñas — ${c?.nombre || ""}`;
+
+  const list = document.getElementById("reviews-list");
+  if (list) list.innerHTML = "";
+
+  const summary = document.getElementById("reviews-summary");
+  if (summary) summary.textContent = "Cargando...";
+
+  const closeBtn = document.getElementById("btn-close-reviews");
+  if (closeBtn) closeBtn.onclick = () => overlay.classList.remove("show");
+
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.remove("show"); };
+
+  const moreBtn = document.getElementById("btn-more-reviews");
+  if (moreBtn) {
+    moreBtn.disabled = true;
+    moreBtn.textContent = "Cargando...";
+  }
+
+  overlay.classList.add("show");
+  cargarPaginaResenas();
+}
+
+async function cargarPaginaResenas() {
+  const { cursoId, page, limit } = reviewsState;
+
+  const list = document.getElementById("reviews-list");
+  const summary = document.getElementById("reviews-summary");
+  const moreBtn = document.getElementById("btn-more-reviews");
+  if (!list) return;
+
+  try {
+    const res = await fetch(`${API_URL}/api/cursos/${cursoId}/resenas?page=${page}&limit=${limit}`);
+    const payload = await res.json();
+
+    // ✅ soporta backend paginado {data,...} o backend viejo [ ... ]
+    const data = Array.isArray(payload) ? payload : (payload.data || []);
+    reviewsState.totalPages = Array.isArray(payload) ? 1 : (payload.totalPages || 1);
+
+    const c = cursosPorId.get(cursoId);
+    const avg = Number(c?.ratingPromedio || 0);
+    const cnt = Number(c?.totalResenas || 0);
+
+    if (summary) {
+      summary.textContent = cnt
+        ? `Promedio: ${avg} — Total reseñas: ${cnt}`
+        : "Aún no hay reseñas para este curso.";
+    }
+
+    if (data.length === 0 && page === 1) {
+      list.innerHTML = `<div style="opacity:.75">Aún no hay reseñas para este curso.</div>`;
+    } else {
+      data.forEach(r => {
+        const rating = Math.max(1, Math.min(5, Number(r.rating || 0)));
+        const stars = "⭐".repeat(rating);
+        const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString() : "";
+        const comentario = (r.comentario || "").trim() || "—";
+
+        const item = document.createElement("div");
+        item.style.padding = "10px";
+        item.style.border = "1px solid rgba(38,49,82,.7)";
+        item.style.borderRadius = "12px";
+        item.style.background = "rgba(17,26,51,.45)";
+        item.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:10px;">
+            <strong>${stars}</strong>
+            <small style="color:rgba(148,163,184,.9)">${fecha}</small>
+          </div>
+          <div style="margin-top:6px;color:rgba(226,232,240,.95)">${comentario}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    const hayMas = reviewsState.page < reviewsState.totalPages;
+    if (moreBtn) {
+      moreBtn.disabled = !hayMas;
+      moreBtn.textContent = hayMas ? "Cargar más" : "No hay más";
+      moreBtn.onclick = () => {
+        reviewsState.page += 1;
+        cargarPaginaResenas();
+      };
+    }
+  } catch (e) {
+    if (summary) summary.textContent = "Error cargando reseñas";
+    if (moreBtn) {
+      moreBtn.disabled = false;
+      moreBtn.textContent = "Reintentar";
+      moreBtn.onclick = () => cargarPaginaResenas();
+    }
   }
 }
 
+window.abrirModalResenas = abrirModalResenas;
 
 /* ===================================================
    PAGINACIÓN
@@ -617,48 +650,34 @@ function renderPaginacion() {
   const info = document.getElementById("info-pagina");
   const btnPrev = document.getElementById("btn-prev");
   const btnNext = document.getElementById("btn-next");
-
   if (!cont) return;
 
   const total = estadoCursos.totalPages;
   const actual = estadoCursos.pageActual;
 
-  // ✅ texto informativo
-  if (info) {
-    info.textContent = `Página ${actual} de ${total}`;
-  }
-
-  // ✅ botones anterior/siguiente
+  if (info) info.textContent = `Página ${actual} de ${total}`;
   if (btnPrev) btnPrev.disabled = actual <= 1;
   if (btnNext) btnNext.disabled = actual >= total;
 
-  // ✅ si solo hay una página → ocultar números
   if (total <= 1) {
     cont.innerHTML = "";
     return;
   }
 
-  // ✅ limpiar SOLO números
   cont.innerHTML = "";
-
   const maxBotones = 7;
 
   let inicio = Math.max(actual - 3, 1);
   let fin = Math.min(inicio + maxBotones - 1, total);
   inicio = Math.max(fin - maxBotones + 1, 1);
 
-  // ✅ primera página
   if (inicio > 1) {
     cont.appendChild(crearBotonPagina(1, actual === 1));
     if (inicio > 2) cont.appendChild(crearPuntos());
   }
 
-  // ✅ páginas centrales
-  for (let p = inicio; p <= fin; p++) {
-    cont.appendChild(crearBotonPagina(p, p === actual));
-  }
+  for (let p = inicio; p <= fin; p++) cont.appendChild(crearBotonPagina(p, p === actual));
 
-  // ✅ última página
   if (fin < total) {
     if (fin < total - 1) cont.appendChild(crearPuntos());
     cont.appendChild(crearBotonPagina(total, actual === total));
@@ -683,7 +702,10 @@ function crearPuntos() {
   s.style.padding = "0 6px";
   return s;
 }
-// ✅ GENERAR CERTIFICADO (GLOBAL)
+
+/* ===================================================
+   CERTIFICADOS
+=================================================== */
 window.generarCertificado = async function (cursoId) {
   try {
     const res = await authFetch(`${API_URL}/api/certificados/generar`, {
@@ -697,7 +719,6 @@ window.generarCertificado = async function (cursoId) {
       return;
     }
 
-    // ✅ Descargar PDF
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
 
@@ -706,13 +727,12 @@ window.generarCertificado = async function (cursoId) {
     a.download = "certificado.pdf";
     a.click();
 
-    // ✅ Recargar certificados automáticamente
     mostrarToast("Certificado generado correctamente ✅", "success");
-    
   } catch (err) {
     mostrarToast("Error: " + err.message, "error");
   }
 };
+
 function mostrarToast(mensaje, tipo = "success") {
   const toast = document.getElementById("toast");
   if (!toast) return;
@@ -724,6 +744,7 @@ function mostrarToast(mensaje, tipo = "success") {
     toast.className = "toast";
   }, 3000);
 }
+
 window.descargarCertificado = async function (cursoId) {
   try {
     const res = await authFetch(`${API_URL}/api/certificados/generar`, {
@@ -745,7 +766,6 @@ window.descargarCertificado = async function (cursoId) {
     a.click();
 
     mostrarToast("Certificado descargado ✅", "success");
-
   } catch (err) {
     mostrarToast("Error: " + err.message, "error");
   }
