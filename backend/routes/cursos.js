@@ -76,26 +76,37 @@ module.exports = (getDB) => {
 
   // ✅ RESEÑAS PÚBLICAS DE UN CURSO (para el popup del catálogo)
   router.get("/:cursoId/resenas", async (req, res) => {
-    try {
-      const cursoId = req.params.cursoId;
-      if (!ObjectId.isValid(cursoId)) return res.json([]);
+  try {
+    const cursoId = req.params.cursoId;
+    if (!ObjectId.isValid(cursoId)) return res.json({ data: [], page: 1, limit: 10, total: 0, totalPages: 1 });
 
-      const limit = Math.min(Math.max(parseInt(req.query.limit || "10", 10), 1), 50);
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || "10", 10), 1), 50);
+    const skip = (page - 1) * limit;
 
-      const reviews = await getDB().collection("resenas")
-        .find({ cursoId: new ObjectId(cursoId) })
+    const filtro = { cursoId: new ObjectId(cursoId) };
+
+    const col = getDB().collection("resenas");
+
+    const [total, data] = await Promise.all([
+      col.countDocuments(filtro),
+      col.find(filtro)
         .sort({ fecha: -1 })
+        .skip(skip)
         .limit(limit)
         .project({ rating: 1, comentario: 1, fecha: 1, _id: 0 })
-        .toArray();
+        .toArray()
+    ]);
 
-      return res.json(reviews);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
 
-    } catch (error) {
-      console.error("Error en /api/cursos/:cursoId/resenas:", error);
-      return res.status(500).json({ error: "Error obteniendo reseñas" });
-    }
-  });
+    return res.json({ data, page, limit, total, totalPages });
+
+  } catch (error) {
+    console.error("Error en /api/cursos/:cursoId/resenas:", error);
+    return res.status(500).json({ error: "Error obteniendo reseñas" });
+  }
+});
 
   return router;
 };
