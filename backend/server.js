@@ -1,9 +1,15 @@
 const express = require("express");
+
 const cors = require("cors");
 
 app.use(cors({
-  origin: "*"
+  origin: [
+    "https://cursos-online-red.vercel.app",   // tu frontend
+    "http://localhost:3000"                   // opcional (para pruebas)
+  ],
+  credentials: true
 }));
+
 
 const path = require("path");
 const connectDB = require("./config");
