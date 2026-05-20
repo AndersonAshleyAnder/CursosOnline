@@ -71,7 +71,28 @@ module.exports = (getDB) => {
       return res.status(500).json({ error: "Error obteniendo cursos" });
     }
   });
+// GET /api/cursos/:cursoId/resenas?limit=10
+router.get("/:cursoId/resenas", async (req, res) => {
+  try {
+    const { ObjectId } = require("mongodb");
+    const cursoId = req.params.cursoId;
+    if (!ObjectId.isValid(cursoId)) return res.json([]);
 
+    const limit = Math.min(Math.max(parseInt(req.query.limit || "10", 10), 1), 50);
+
+    const reviews = await getDB().collection("resenas")
+      .find({ cursoId: new ObjectId(cursoId) })
+      .sort({ fecha: -1 })
+      .limit(limit)
+      .project({ rating: 1, comentario: 1, fecha: 1, _id: 0 })
+      .toArray();
+
+    return res.json(reviews);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: "Error obteniendo reseñas" });
+  }
+});
   // ✅ RESEÑAS PÚBLICAS DE UN CURSO (para el popup del catálogo)
   router.get("/:cursoId/resenas", async (req, res) => {
     try {
