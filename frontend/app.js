@@ -529,6 +529,14 @@ function abrirPreview(cursoId, estaInscrito) {
   overlay.classList.add("show");
 }
 
+function toggleMenu() {
+  const menu = document.getElementById("menu");
+  if (menu) {
+    menu.classList.toggle("show");
+  }
+}
+
+
 /* ===================================================
    PAGINACIÓN
 =================================================== */
