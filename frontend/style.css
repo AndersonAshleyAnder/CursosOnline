@@ -1122,29 +1122,6 @@ media (max-width: 480px){
 }
 
 /* TABLA */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #e2e8f0;
-}
-
-/* HEADER */
-thead {
-  background: rgba(99, 102, 241, 0.1);
-}
-
-thead th {
-  text-align: left;
-  padding: 12px;
-  color: #a5b4fc;
-}
-
-/* FILAS */
-
-/* CELDAS */
-td {
-  padding: 12px;
-}
 
 /* BOTONES */
 td button {
@@ -1158,4 +1135,26 @@ td button {
 
 td button:hover {
   transform: scale(1.1);
+}
+/* ✅ AJUSTE FINAL HOVER TABLA */
+
+.table-card table {
+  background: transparent;
+}
+
+.table-card tbody {
+  background: transparent;
+}
+
+.table-card tbody tr {
+  background: transparent;
+}
+
+.table-card tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(147, 51, 234, 0.18) 0%,
+    rgba(147, 51, 234, 0.08) 60%,
+    transparent 100%
+  );
 }
