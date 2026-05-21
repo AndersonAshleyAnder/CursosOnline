@@ -140,10 +140,23 @@
 
   <!-- ACTIVIDAD RECIENTE -->
   <h2>Actividad reciente</h2>
-  <div class="activity">
-    <ul id="lista-actividad"></ul>
-    <p><a href="logs-admin.html">Ver auditoría completa →</a></p>
+ <div class="section-card">
+  <h2>Actividad reciente</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-actividad"></tbody>
+    </table>
   </div>
+
+  <p><a href="logs-admin.html">Ver auditoría completa →</a></p>
+</div>
 
 </main>
 
@@ -228,13 +241,19 @@ async function cargarDashboard(){
   );
 
   const logs = await authFetch(`${API_URL}/api/admin/logs?limit=5`).then(r=>r.json());
-  const ul = document.getElementById("lista-actividad");
-  ul.innerHTML = "";
-  logs.forEach(l=>{
-    const li = document.createElement("li");
-    li.textContent = `${l.accion} — ${new Date(l.fecha).toLocaleString()}`;
-    ul.appendChild(li);
-  });
+  const tbody = document.getElementById("tabla-actividad");
+tbody.innerHTML = "";
+
+logs.forEach(l=>{
+  const tr = document.createElement("tr");
+
+  tr.innerHTML = `
+    <td>${l.accion}</td>
+    <td>${new Date(l.fecha).toLocaleString()}</td>
+  `;
+
+  tbody.appendChild(tr);
+});
 }
 
 function actualizar(id, cardId, val){
