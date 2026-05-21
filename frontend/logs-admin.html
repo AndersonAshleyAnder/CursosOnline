@@ -5,7 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auditoría Administrativa</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .paginacion {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      margin-top:20px;
+      flex-wrap:wrap;
+    }
+
+    .paginacion-numeros{
+      display:flex;
+      gap:8px;
+    }
+
+    .paginacion button{
+      min-width:38px;
+      padding:6px 10px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      background: linear-gradient(135deg,#6d28d9,#9333ea);
+      color:#fff;
+      font-weight:bold;
+    }
+
+    .paginacion button.activo{
+      background: linear-gradient(135deg,#a78bfa,#c084fc);
+      cursor:default;
+    }
+
+    .info-pagina{
+      text-align:center;
+      margin-top:8px;
+      opacity:.8;
+      color:#fff;
+    }
+  </style>
 </head>
+
 <body>
 
 <nav class="nav-container">
@@ -39,37 +79,33 @@
 
   <div class="section-card">
 
-    <!-- FILTRO -->
+    <!-- BUSCAR -->
     <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
-      <input id="buscar" placeholder="Filtrar por acción, email o ID" style="flex:1;">
-      <button id="btn-buscar-logs">Buscar</button>
+      <input id="buscar" placeholder="Filtrar..." style="flex:1;">
+      <button id="btn-buscar">Buscar</button>
     </div>
 
     <!-- TABLA -->
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Acción</th>
-            <th>Usuario afectado</th>
-            <th>Fecha</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-logs"></tbody>
-      </table>
+    <table>
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <th>Usuario</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="tabla"></tbody>
+    </table>
+
+    <!-- PAGINACIÓN -->
+    <div class="paginacion">
+      <button id="prev">Anterior</button>
+      <div id="numeros" class="paginacion-numeros"></div>
+      <button id="next">Siguiente</button>
     </div>
 
-    <!-- ✅ PAGINACIÓN NUMÉRICA (igual al catálogo) -->
-    <div class="paginacion-wrapper" style="margin-top:16px;">
-      <button id="btn-prev-logs">Anterior</button>
+    <div id="info" class="info-pagina"></div>
 
-      <!-- OJO: uso un ID diferente para evitar choques con otras páginas -->
-      <div id="paginacion-logs"></div>
-
-      <button id="btn-next-logs">Siguiente</button>
-    </div>
-
-    <p id="info-pagina-logs" style="text-align:center;"></p>
   </div>
 
 </main>
@@ -77,155 +113,131 @@
 <script src="app.js"></script>
 
 <script>
-  let logs = [];
-  let logsFiltrados = [];
-  let usuariosMap = {};
-  let page = 1;
-  const limit = 10;
+let logs = [];
+let filtrados = [];
+let page = 1;
+const limit = 5;
 
-  async function cargarLogs(){
-    try{
-      const q = (document.getElementById("buscar").value || "").toLowerCase();
+/* ✅ CARGAR DATOS */
+async function cargarLogs(){
+  const res = await fetch(`${API_URL}/api/admin/logs?limit=200`);
+  logs = await res.json();
 
-      const logsResp = await authFetch(`${API_URL}/api/admin/logs?limit=200`);
-      logs = await logsResp.json();
+  aplicarFiltro();
+}
 
-      const usersResp = await authFetch(`${API_URL}/api/admin/usuarios`);
-      const users = await usersResp.json();
+/* ✅ FILTRO */
+function aplicarFiltro(){
+  const q = (document.getElementById("buscar").value || "").toLowerCase();
 
-      usuariosMap = {};
-      users.forEach(u => {
-        usuariosMap[u._id] = u.email;
-      });
+  filtrados = logs.filter(x =>
+    (x.accion || "").toLowerCase().includes(q) ||
+    (x.usuarioId || "").toLowerCase().includes(q)
+  );
 
-      // aplicar filtro sobre copia
-      logsFiltrados = Array.isArray(logs) ? [...logs] : [];
+  page = 1;
+  render();
+}
 
-      if (q){
-        logsFiltrados = logsFiltrados.filter(l =>
-          (l.accion || "").toLowerCase().includes(q) ||
-          (l.usuarioId || "").toLowerCase().includes(q) ||
-          (usuariosMap[l.usuarioId] || "").toLowerCase().includes(q)
-        );
-      }
+/* ✅ RENDER TABLA */
+function render(){
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
 
-      page = 1;
-      render();
-      renderPaginacionNumerica();
-    }catch(e){
-      alert(e.message);
-    }
-  }
+  const inicio = (page-1)*limit;
+  const fin = inicio + limit;
 
-  function render(){
-    const tbody = document.getElementById("tabla-logs");
-    tbody.innerHTML = "";
+  filtrados.slice(inicio, fin).forEach(l=>{
+    const tr = document.createElement("tr");
 
-    const ini = (page - 1) * limit;
-    const fin = ini + limit;
-
-    logsFiltrados.slice(ini, fin).forEach(l => {
-      const email = usuariosMap[l.usuarioId] || "—";
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td>${l.accion || ""}</td>
-        <td>
-          <strong>${email}</strong><br>
-          <small style="color:#94a3b8;">${l.usuarioId || ""}</small>
-        </td>
-        <td>${l.fecha ? new Date(l.fecha).toLocaleString() : ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    const totalPages = Math.max(Math.ceil(logsFiltrados.length / limit), 1);
-    document.getElementById("info-pagina-logs").textContent = `Página ${page} de ${totalPages}`;
-  }
-
-  function renderPaginacionNumerica(){
-    const cont = document.getElementById("paginacion-logs");
-    const btnPrev = document.getElementById("btn-prev-logs");
-    const btnNext = document.getElementById("btn-next-logs");
-
-    const totalPages = Math.max(Math.ceil(logsFiltrados.length / limit), 1);
-
-    // Prev/Next
-    btnPrev.disabled = page <= 1;
-    btnNext.disabled = page >= totalPages;
-
-    btnPrev.onclick = () => {
-      if (page > 1){
-        page--;
-        render();
-        renderPaginacionNumerica();
-      }
-    };
-
-    btnNext.onclick = () => {
-      if (page < totalPages){
-        page++;
-        render();
-        renderPaginacionNumerica();
-      }
-    };
-
-    // si solo 1 página → no pintar números
-    if (totalPages <= 1){
-      cont.innerHTML = "";
-      return;
-    }
-
-    cont.innerHTML = "";
-
-    const maxBotones = 7;
-    let inicio = Math.max(page - 3, 1);
-    let fin = Math.min(inicio + maxBotones - 1, totalPages);
-    inicio = Math.max(fin - maxBotones + 1, 1);
-
-    const btnPag = (p, activo) => {
-      const b = document.createElement("button");
-      b.textContent = String(p);
-      b.className = activo ? "activo" : "";
-      b.disabled = activo;
-      b.onclick = () => {
-        page = p;
-        render();
-        renderPaginacionNumerica();
-      };
-      return b;
-    };
-
-    const puntos = () => {
-      const s = document.createElement("span");
-      s.textContent = "...";
-      s.style.padding = "0 6px";
-      return s;
-    };
-
-    if (inicio > 1){
-      cont.appendChild(btnPag(1, page === 1));
-      if (inicio > 2) cont.appendChild(puntos());
-    }
-
-    for (let p = inicio; p <= fin; p++){
-      cont.appendChild(btnPag(p, p === page));
-    }
-
-    if (fin < totalPages){
-      if (fin < totalPages - 1) cont.appendChild(puntos());
-      cont.appendChild(btnPag(totalPages, page === totalPages));
-    }
-  }
-
-  // eventos
-  document.getElementById("btn-buscar-logs").onclick = cargarLogs;
-  document.getElementById("buscar").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") cargarLogs();
+    tr.innerHTML = `
+      <td>${l.accion}</td>
+      <td>${l.usuarioId}</td>
+      <td>${l.fecha ? new Date(l.fecha).toLocaleString() : ""}</td>
+    `;
+    tabla.appendChild(tr);
   });
 
-  // init
-  cargarLogs();
+  renderPaginacion();
+}
+
+/* ✅ PAGINACIÓN NUMÉRICA */
+function renderPaginacion(){
+  const totalPages = Math.ceil(filtrados.length / limit) || 1;
+
+  const cont = document.getElementById("numeros");
+  cont.innerHTML = "";
+
+  document.getElementById("info").textContent =
+    `Página ${page} de ${totalPages}`;
+
+  document.getElementById("prev").disabled = page===1;
+  document.getElementById("next").disabled = page===totalPages;
+
+  const max = 7;
+  let start = Math.max(1, page-3);
+  let end = Math.min(totalPages, start+max-1);
+  start = Math.max(1, end-max+1);
+
+  const crearBtn = (p) => {
+    const b = document.createElement("button");
+    b.textContent = p;
+
+    if(p===page){
+      b.classList.add("activo");
+      b.disabled=true;
+    }
+
+    b.onclick = ()=>{
+      page = p;
+      render();
+    };
+
+    return b;
+  };
+
+  if(start>1){
+    cont.appendChild(crearBtn(1));
+    if(start>2){
+      const dots = document.createElement("span");
+      dots.textContent = "...";
+      cont.appendChild(dots);
+    }
+  }
+
+  for(let i=start;i<=end;i++){
+    cont.appendChild(crearBtn(i));
+  }
+
+  if(end<totalPages){
+    if(end<totalPages-1){
+      const dots = document.createElement("span");
+      dots.textContent = "...";
+      cont.appendChild(dots);
+    }
+    cont.appendChild(crearBtn(totalPages));
+  }
+}
+
+/* ✅ BOTONES */
+document.getElementById("prev").onclick = ()=>{
+  if(page>1){
+    page--;
+    render();
+  }
+};
+
+document.getElementById("next").onclick = ()=>{
+  if(page < Math.ceil(filtrados.length / limit)){
+    page++;
+    render();
+  }
+};
+
+document.getElementById("btn-buscar").onclick = aplicarFiltro;
+
+/* INIT */
+cargarLogs();
 </script>
 
 </body>
