@@ -10,7 +10,6 @@
     .paginacion {
       display:flex;
       justify-content:center;
-      align-items:center;
       gap:10px;
       margin-top:20px;
       flex-wrap:wrap;
@@ -24,24 +23,22 @@
     .paginacion button{
       min-width:38px;
       padding:6px 10px;
-      border-radius:10px;
       border:none;
-      cursor:pointer;
-      background: linear-gradient(135deg,#6d28d9,#9333ea);
+      border-radius:10px;
+      background:#7c3aed;
       color:#fff;
+      cursor:pointer;
       font-weight:bold;
     }
 
     .paginacion button.activo{
-      background: linear-gradient(135deg,#a78bfa,#c084fc);
+      background:#c084fc;
       cursor:default;
     }
 
-    .info-pagina{
+    .info{
       text-align:center;
       margin-top:8px;
-      opacity:.8;
-      color:#fff;
     }
   </style>
 </head>
@@ -52,40 +49,20 @@
   <div class="nav-left">
     <a href="index.html">Inicio</a>
   </div>
-
   <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-
-  <div class="nav-menu" id="menu">
-    <div class="nav-links">
-      <a href="mis-cursos.html" id="link-mis">Mis Cursos</a>
-      <a href="certificados.html" id="link-cert">Certificados</a>
-      <a href="estudiantes.html" id="link-est">Estudiantes</a>
-      <a href="consultas.html" id="link-con">Consultas</a>
-      <a href="dashboard-admin.html" id="link-dashboard">Dashboard</a>
-    </div>
-
-    <div class="nav-auth">
-      <a href="login.html" id="link-login">Iniciar sesión</a>
-      <a href="register.html" id="link-register">Registrarse</a>
-      <a href="#" id="link-logout">Cerrar sesión</a>
-    </div>
-  </div>
 </nav>
 
 <main class="layout">
 
   <h1>Auditoría Administrativa</h1>
-  <p>Registro completo de acciones realizadas por el administrador.</p>
 
   <div class="section-card">
 
-    <!-- BUSCAR -->
-    <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
+    <div style="display:flex; gap:12px; margin:20px 0;">
       <input id="buscar" placeholder="Filtrar..." style="flex:1;">
-      <button id="btn-buscar">Buscar</button>
+      <button id="btnBuscar">Buscar</button>
     </div>
 
-    <!-- TABLA -->
     <table>
       <thead>
         <tr>
@@ -97,14 +74,13 @@
       <tbody id="tabla"></tbody>
     </table>
 
-    <!-- PAGINACIÓN -->
     <div class="paginacion">
       <button id="prev">Anterior</button>
       <div id="numeros" class="paginacion-numeros"></div>
       <button id="next">Siguiente</button>
     </div>
 
-    <div id="info" class="info-pagina"></div>
+    <div id="info" class="info"></div>
 
   </div>
 
@@ -118,15 +94,30 @@ let filtrados = [];
 let page = 1;
 const limit = 5;
 
-/* ✅ CARGAR DATOS */
-async function cargarLogs(){
-  const res = await fetch(`${API_URL}/api/admin/logs?limit=200`);
-  logs = await res.json();
+async function cargar(){
+
+  try{
+    const res = await authFetch(`${API_URL}/api/admin/logs?limit=200`);
+
+    if(!res.ok){
+      throw new Error("No autorizado o error en logs");
+    }
+
+    logs = await res.json();
+
+    if(!Array.isArray(logs)){
+      console.error("La respuesta no es un array:", logs);
+      logs = [];
+    }
+
+  }catch(err){
+    console.error(err);
+    logs = [];
+  }
 
   aplicarFiltro();
 }
 
-/* ✅ FILTRO */
 function aplicarFiltro(){
   const q = (document.getElementById("buscar").value || "").toLowerCase();
 
@@ -139,15 +130,13 @@ function aplicarFiltro(){
   render();
 }
 
-/* ✅ RENDER TABLA */
 function render(){
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = "";
 
   const inicio = (page-1)*limit;
-  const fin = inicio + limit;
 
-  filtrados.slice(inicio, fin).forEach(l=>{
+  filtrados.slice(inicio, inicio + limit).forEach(l => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
@@ -155,37 +144,35 @@ function render(){
       <td>${l.usuarioId}</td>
       <td>${l.fecha ? new Date(l.fecha).toLocaleString() : ""}</td>
     `;
+
     tabla.appendChild(tr);
   });
 
   renderPaginacion();
 }
 
-/* ✅ PAGINACIÓN NUMÉRICA */
 function renderPaginacion(){
   const totalPages = Math.ceil(filtrados.length / limit) || 1;
-
   const cont = document.getElementById("numeros");
   cont.innerHTML = "";
 
   document.getElementById("info").textContent =
     `Página ${page} de ${totalPages}`;
 
-  document.getElementById("prev").disabled = page===1;
-  document.getElementById("next").disabled = page===totalPages;
+  prev.disabled = page === 1;
+  next.disabled = page === totalPages;
 
   const max = 7;
   let start = Math.max(1, page-3);
-  let end = Math.min(totalPages, start+max-1);
-  start = Math.max(1, end-max+1);
+  let end = Math.min(totalPages, start + max - 1);
 
-  const crearBtn = (p) => {
+  const crear = (p)=>{
     const b = document.createElement("button");
     b.textContent = p;
 
     if(p===page){
       b.classList.add("activo");
-      b.disabled=true;
+      b.disabled = true;
     }
 
     b.onclick = ()=>{
@@ -196,48 +183,28 @@ function renderPaginacion(){
     return b;
   };
 
-  if(start>1){
-    cont.appendChild(crearBtn(1));
-    if(start>2){
-      const dots = document.createElement("span");
-      dots.textContent = "...";
-      cont.appendChild(dots);
-    }
-  }
-
-  for(let i=start;i<=end;i++){
-    cont.appendChild(crearBtn(i));
-  }
-
-  if(end<totalPages){
-    if(end<totalPages-1){
-      const dots = document.createElement("span");
-      dots.textContent = "...";
-      cont.appendChild(dots);
-    }
-    cont.appendChild(crearBtn(totalPages));
+  for(let i = start; i <= end; i++){
+    cont.appendChild(crear(i));
   }
 }
 
-/* ✅ BOTONES */
-document.getElementById("prev").onclick = ()=>{
+prev.onclick = ()=>{
   if(page>1){
     page--;
     render();
   }
 };
 
-document.getElementById("next").onclick = ()=>{
-  if(page < Math.ceil(filtrados.length / limit)){
+next.onclick = ()=>{
+  if(page < Math.ceil(filtrados.length/limit)){
     page++;
     render();
   }
 };
 
-document.getElementById("btn-buscar").onclick = aplicarFiltro;
+btnBuscar.onclick = aplicarFiltro;
 
-/* INIT */
-cargarLogs();
+cargar();
 </script>
 
 </body>
