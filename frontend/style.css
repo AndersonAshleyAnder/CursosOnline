@@ -208,8 +208,22 @@ thead th{
   font-weight: 700;
 }
 tbody td{ padding:14px; }
-tbody tr{ transition: background .2s ease; }
-tbody tr:hover{ background: rgba(120,130,255,0.12); }
+/* FILA NORMAL (sin color) */
+tbody tr {
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+/* SOLO AL PASAR EL MOUSE */
+tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(147, 51, 234, 0.15),
+    rgba(59, 130, 246, 0.1)
+  );
+  box-shadow: 0 0 12px rgba(147, 51, 234, 0.3);
+  transform: scale(1.01);
+}
 
 /* Animación filas (segura) */
 @keyframes fadeSlideUp {
@@ -1126,16 +1140,6 @@ thead th {
 }
 
 /* FILAS */
-tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  transition: all 0.2s ease;
-}
-
-/* ✅ EFECTO HOVER (LO QUE QUIERES 🔥) */
-tbody tr:hover {
-  background: rgba(147, 51, 234, 0.15);
-  transform: scale(1.01);
-}
 
 /* CELDAS */
 td {
