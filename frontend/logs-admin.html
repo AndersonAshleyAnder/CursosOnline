@@ -38,6 +38,7 @@
   <p>Registro completo de acciones realizadas por el administrador.</p>
 
   <div class="section-card">
+
     <!-- FILTRO -->
     <div style="display:flex; gap:12px; max-width:640px; margin:20px 0;">
       <input id="buscar" placeholder="Filtrar por acción, email o ID" style="flex:1;">
@@ -62,13 +63,13 @@
     <div class="paginacion-wrapper" style="margin-top:16px;">
       <button id="btn-prev-logs">Anterior</button>
 
-      <!-- usa el mismo ID que estilizas en style.css -->
-      <div id="paginacion"></div>
+      <!-- OJO: uso un ID diferente para evitar choques con otras páginas -->
+      <div id="paginacion-logs"></div>
 
       <button id="btn-next-logs">Siguiente</button>
     </div>
 
-    <p id="info-pagina" style="text-align:center;"></p>
+    <p id="info-pagina-logs" style="text-align:center;"></p>
   </div>
 
 </main>
@@ -76,142 +77,155 @@
 <script src="app.js"></script>
 
 <script>
-let logs = [];
-let usuariosMap = {};
-let page = 1;
-const limit = 10;
+  let logs = [];
+  let logsFiltrados = [];
+  let usuariosMap = {};
+  let page = 1;
+  const limit = 10;
 
-/* =========================
-   CARGAR LOGS (200 máx) + usuarios
-   ========================= */
-async function cargarLogs(){
-  try{
-    const q = (document.getElementById("buscar").value || "").toLowerCase();
+  async function cargarLogs(){
+    try{
+      const q = (document.getElementById("buscar").value || "").toLowerCase();
 
-    const logsResp = await authFetch(`${API_URL}/api/admin/logs?limit=200`);
-    logs = await logsResp.json();
+      const logsResp = await authFetch(`${API_URL}/api/admin/logs?limit=200`);
+      logs = await logsResp.json();
 
-    const usersResp = await authFetch(`${API_URL}/api/admin/usuarios`);
-    const users = await usersResp.json();
+      const usersResp = await authFetch(`${API_URL}/api/admin/usuarios`);
+      const users = await usersResp.json();
 
-    usuariosMap = {};
-    users.forEach(u => {
-      usuariosMap[u._id] = u.email;
+      usuariosMap = {};
+      users.forEach(u => {
+        usuariosMap[u._id] = u.email;
+      });
+
+      // aplicar filtro sobre copia
+      logsFiltrados = Array.isArray(logs) ? [...logs] : [];
+
+      if (q){
+        logsFiltrados = logsFiltrados.filter(l =>
+          (l.accion || "").toLowerCase().includes(q) ||
+          (l.usuarioId || "").toLowerCase().includes(q) ||
+          (usuariosMap[l.usuarioId] || "").toLowerCase().includes(q)
+        );
+      }
+
+      page = 1;
+      render();
+      renderPaginacionNumerica();
+    }catch(e){
+      alert(e.message);
+    }
+  }
+
+  function render(){
+    const tbody = document.getElementById("tabla-logs");
+    tbody.innerHTML = "";
+
+    const ini = (page - 1) * limit;
+    const fin = ini + limit;
+
+    logsFiltrados.slice(ini, fin).forEach(l => {
+      const email = usuariosMap[l.usuarioId] || "—";
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${l.accion || ""}</td>
+        <td>
+          <strong>${email}</strong><br>
+          <small style="color:#94a3b8;">${l.usuarioId || ""}</small>
+        </td>
+        <td>${l.fecha ? new Date(l.fecha).toLocaleString() : ""}</td>
+      `;
+      tbody.appendChild(tr);
     });
 
-    if(q){
-      logs = logs.filter(l =>
-        (l.accion || "").toLowerCase().includes(q) ||
-        (l.usuarioId || "").toLowerCase().includes(q) ||
-        (usuariosMap[l.usuarioId] || "").toLowerCase().includes(q)
-      );
+    const totalPages = Math.max(Math.ceil(logsFiltrados.length / limit), 1);
+    document.getElementById("info-pagina-logs").textContent = `Página ${page} de ${totalPages}`;
+  }
+
+  function renderPaginacionNumerica(){
+    const cont = document.getElementById("paginacion-logs");
+    const btnPrev = document.getElementById("btn-prev-logs");
+    const btnNext = document.getElementById("btn-next-logs");
+
+    const totalPages = Math.max(Math.ceil(logsFiltrados.length / limit), 1);
+
+    // Prev/Next
+    btnPrev.disabled = page <= 1;
+    btnNext.disabled = page >= totalPages;
+
+    btnPrev.onclick = () => {
+      if (page > 1){
+        page--;
+        render();
+        renderPaginacionNumerica();
+      }
+    };
+
+    btnNext.onclick = () => {
+      if (page < totalPages){
+        page++;
+        render();
+        renderPaginacionNumerica();
+      }
+    };
+
+    // si solo 1 página → no pintar números
+    if (totalPages <= 1){
+      cont.innerHTML = "";
+      return;
     }
 
-    page = 1;
-    render();
-    renderPaginacionNumerica();
-  }catch(e){
-    alert(e.message);
+    cont.innerHTML = "";
+
+    const maxBotones = 7;
+    let inicio = Math.max(page - 3, 1);
+    let fin = Math.min(inicio + maxBotones - 1, totalPages);
+    inicio = Math.max(fin - maxBotones + 1, 1);
+
+    const btnPag = (p, activo) => {
+      const b = document.createElement("button");
+      b.textContent = String(p);
+      b.className = activo ? "activo" : "";
+      b.disabled = activo;
+      b.onclick = () => {
+        page = p;
+        render();
+        renderPaginacionNumerica();
+      };
+      return b;
+    };
+
+    const puntos = () => {
+      const s = document.createElement("span");
+      s.textContent = "...";
+      s.style.padding = "0 6px";
+      return s;
+    };
+
+    if (inicio > 1){
+      cont.appendChild(btnPag(1, page === 1));
+      if (inicio > 2) cont.appendChild(puntos());
+    }
+
+    for (let p = inicio; p <= fin; p++){
+      cont.appendChild(btnPag(p, p === page));
+    }
+
+    if (fin < totalPages){
+      if (fin < totalPages - 1) cont.appendChild(puntos());
+      cont.appendChild(btnPag(totalPages, page === totalPages));
+    }
   }
-}
 
-/* =========================
-   RENDER TABLA (slice por página)
-   ========================= */
-function render(){
-  const tbody = document.getElementById("tabla-logs");
-  tbody.innerHTML = "";
-
-  const ini = (page - 1) * limit;
-  const fin = ini + limit;
-
-  logs.slice(ini, fin).forEach(l => {
-    const email = usuariosMap[l.usuarioId] || "—";
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${l.accion || ""}</td>
-      <td>
-        <strong>${email}</strong><br>
-        <small style="color:#94a3b8;">${l.usuarioId || ""}</small>
-      </td>
-      <td>${l.fecha ? new Date(l.fecha).toLocaleString() : ""}</td>
-    `;
-    tbody.appendChild(tr);
+  // eventos
+  document.getElementById("btn-buscar-logs").onclick = cargarLogs;
+  document.getElementById("buscar").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") cargarLogs();
   });
 
-  const totalPages = Math.max(Math.ceil(logs.length / limit), 1);
-  document.getElementById("info-pagina").textContent = `Página ${page} de ${totalPages}`;
-}
-
-/* =========================
-   PAGINACIÓN NUMÉRICA (igual al catálogo)
-   ========================= */
-function renderPaginacionNumerica(){
-  const cont = document.getElementById("paginacion");
-  const btnPrev = document.getElementById("btn-prev-logs");
-  const btnNext = document.getElementById("btn-next-logs");
-
-  const totalPages = Math.max(Math.ceil(logs.length / limit), 1);
-
-  btnPrev.disabled = page <= 1;
-  btnNext.disabled = page >= totalPages;
-
-  btnPrev.onclick = () => { if(page > 1){ page--; render(); renderPaginacionNumerica(); } };
-  btnNext.onclick = () => { if(page < totalPages){ page++; render(); renderPaginacionNumerica(); } };
-
-  // si solo 1 página, no mostrar números
-  if (totalPages <= 1){
-    cont.innerHTML = "";
-    return;
-  }
-
-  cont.innerHTML = "";
-
-  const maxBotones = 7;
-  let inicio = Math.max(page - 3, 1);
-  let fin = Math.min(inicio + maxBotones - 1, totalPages);
-  inicio = Math.max(fin - maxBotones + 1, 1);
-
-  const btnPag = (p, activo) => {
-    const b = document.createElement("button");
-    b.textContent = String(p);
-    b.className = activo ? "activo" : ""; // usa tu estilo del CSS
-    b.disabled = activo;
-    b.onclick = () => { page = p; render(); renderPaginacionNumerica(); };
-    return b;
-  };
-
-  const puntos = () => {
-    const s = document.createElement("span");
-    s.textContent = "...";
-    s.style.padding = "0 6px";
-    return s;
-  };
-
-  if (inicio > 1){
-    cont.appendChild(btnPag(1, page === 1));
-    if (inicio > 2) cont.appendChild(puntos());
-  }
-
-  for (let p = inicio; p <= fin; p++){
-    cont.appendChild(btnPag(p, p === page));
-  }
-
-  if (fin < totalPages){
-    if (fin < totalPages - 1) cont.appendChild(puntos());
-    cont.appendChild(btnPag(totalPages, page === totalPages));
-  }
-}
-
-/* Eventos */
-document.getElementById("btn-buscar-logs").onclick = cargarLogs;
-document.getElementById("buscar").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") cargarLogs();
-});
-
-/* init */
-cargarLogs();
+  // init
+  cargarLogs();
 </script>
 
 </body>
