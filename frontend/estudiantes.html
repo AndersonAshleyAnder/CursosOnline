@@ -157,16 +157,36 @@ function showLoader(v){
 async function cargar(){
   try{
     showLoader(true);
+
     const q = document.getElementById("buscar").value || "";
+    const fechaInicio = document.getElementById("fechaInicio").value;
+    const fechaFin = document.getElementById("fechaFin").value;
 
-    const res = await authFetch(`${API_URL}/api/admin/usuarios?q=${encodeURIComponent(q)}`);
-    usuarios = await res.json();
+    const params = new URLSearchParams({
+      q,
+      fechaInicio,
+      fechaFin
+    });
 
-    document.getElementById("total").textContent = `Total estudiantes: ${usuarios.length}`;
+    const res = await authFetch(`${API_URL}/api/estudiantes?${params}`);
+    const json = await res.json();
+
+    usuarios = json.data || [];
+
+    document.getElementById("total").textContent =
+      `Total estudiantes: ${json.total}`;
+
     page = 1;
 
     render();
     renderPaginacionNumerica();
+
+  }catch(e){
+    showToast(e.message,false);
+  }finally{
+    showLoader(false);
+  }
+}
   }catch(e){
     showToast(e.message,false);
   }finally{
