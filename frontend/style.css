@@ -1090,3 +1090,68 @@ media (max-width: 480px){
   }
 }
 
+/* ✅ CONTENEDOR COMO AUDITORÍA */
+.table-card {
+  background: linear-gradient(135deg, #0b1437, #0f1c44);
+  border: 1px solid rgba(147, 51, 234, 0.4);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow:
+    0 0 20px rgba(147, 51, 234, 0.2),
+    inset 0 0 10px rgba(147, 51, 234, 0.1);
+}
+
+/* SCROLL INTERNO */
+.table-wrap {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* TABLA */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #e2e8f0;
+}
+
+/* HEADER */
+thead {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+thead th {
+  text-align: left;
+  padding: 12px;
+  color: #a5b4fc;
+}
+
+/* FILAS */
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+}
+
+/* ✅ EFECTO HOVER (LO QUE QUIERES 🔥) */
+tbody tr:hover {
+  background: rgba(147, 51, 234, 0.15);
+  transform: scale(1.01);
+}
+
+/* CELDAS */
+td {
+  padding: 12px;
+}
+
+/* BOTONES */
+td button {
+  border: none;
+  background: linear-gradient(135deg,#7c3aed,#9333ea);
+  color: white;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+td button:hover {
+  transform: scale(1.1);
+}
