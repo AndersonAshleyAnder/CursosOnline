@@ -30,32 +30,14 @@ router.get("/", async (req, res) => {
     const skip = (page - 1) * limit;
 
     const q = (req.query.q || "").trim();
-    const fechaInicio = req.query.fechaInicio;
-    const fechaFin = req.query.fechaFin;
-
     const filtro = {};
 
-    // 🔎 búsqueda normal
     if (q) {
+      // busca por nombre o email
       filtro.$or = [
         { nombre: { $regex: q, $options: "i" } },
-        { correo: { $regex: q, $options: "i" } }
+        { email: { $regex: q, $options: "i" } }
       ];
-    }
-
-    // ✅ FILTRO POR FECHA (CLAVE 🔥)
-    if (fechaInicio || fechaFin) {
-      filtro.fechaRegistro = {};
-
-      if (fechaInicio) {
-        filtro.fechaRegistro.$gte = new Date(fechaInicio);
-      }
-
-      if (fechaFin) {
-        const fin = new Date(fechaFin);
-        fin.setHours(23,59,59,999);
-        filtro.fechaRegistro.$lte = fin;
-      }
     }
 
     const col = db.collection("estudiantes");
@@ -78,7 +60,6 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Error obteniendo estudiantes" });
   }
 });
-  
   // ===============================
   // ✅ POST estudiante
   // ===============================
